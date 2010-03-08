@@ -1,0 +1,94 @@
+package no.olog 
+{
+	/**
+	 * @author Oyvind Nordhagen
+	 * @date 20. feb. 2010
+	 */
+	internal class Oplist 
+	{
+		// Configurable
+		internal static var rememberWindowState:Boolean = true;
+		internal static var alwaysOnTop:Boolean = true;
+		internal static var checkForNewVersion:Boolean = true;
+		internal static var enableTimeStamp:Boolean = false;
+		internal static var enableLineNumbers:Boolean = true;
+		internal static var enableRunTime:Boolean = true;
+		internal static var enableVersionCheck:Boolean = true;
+		internal static var keyBoardEnabled:Boolean = true;
+		internal static var stackRepeatedMessages:Boolean = true;
+		
+		// Defaults bounds
+		internal static const DEFAULT_WIDTH:int = 400;
+		internal static const DEFAULT_HEIGHT:int = 350;
+		internal static var x:int = -1;
+		internal static var y:int = -1;
+		internal static var width:int = -1;
+		internal static var height:int = -1;
+		// Title bar
+		internal static const NAME:String = "Olog";
+		internal static const VERSION:String = "0.9b";
+		internal static const TB_FONT:String = "_sans";
+		internal static const TB_FONT_SIZE:uint = 11;
+		internal static const TB_COLORS:Array = [0x595959, 0x262626, 0x191919, 0x070707];
+		internal static const TB_RATIOS:Array = [0, 128, 129, 255];
+		internal static const TB_ALPHAS:Array = [1, 1, 1, 1];
+		internal static const TB_PADDING:int = 13;
+		internal static const TB_HEIGHT:int = 28;
+		internal static const TB_ALIGN:String = "center";
+		// Version check
+		internal static const VERSION_CHECK_URL:String = "http://www.oyvindnordhagen.com/olog/OlogVersionHistory.xml";
+		internal static const NEW_VERSION_MSG:String = "Olog version @version available!";
+		internal static const DAY_IN_MS:int = 86400000;
+		internal static const VERSION_CHECK_INTERVAL_DAYS:int = 7;
+		internal static const SHOW_VERSION_DETAILS:String = "detailsLink";
+		internal static const FEATURES:String = "New features:";
+		internal static const FIXES:String = "Bug fixes:";
+		internal static const NOTES:String = "Notes:";
+		internal static const DL_LABEL:String = "Download here!";
+		internal static const DL_LINK:String = "http://www.oyvindnordhagen.com/blog/ailogger/";
+		// Password prompt
+		internal static const PW_BOX_WIDTH:Number = 200;
+		internal static const PW_BOX_HEIGHT:Number = 30;
+		// Log window appearance
+		internal static const BG_ALPHA:Number = 0.9;
+		internal static const BG_COL:uint = 0x1C1C1C;
+		internal static const BTN_LINE_COLOR:uint = 0x999999;
+		internal static const BTN_FILL_COLOR:uint = 0x000000;
+		internal static const BTN_UP_ALPHA:Number = 0.7;
+		internal static const BTN_OVER_ALPHA:Number = 1;
+		internal static const CORNER_RADIUS:int = 5;
+		internal static const DRAGGER_SIZE:int = 10;
+		internal static const MIN_WIDTH:int = 100;
+		internal static const MIN_HEIGHT:int = 100;
+		internal static const PADDING:int = 5;
+		internal static const TEXT_INDENT:int = 10;
+		// Pref pane
+		internal static const PREF_PANE_BG_COLOR:uint = 0x999999;
+		internal static const PREFS_BUTTON_WIDTH:uint = 100;
+		internal static const PREFS_BUTTON_HEIGHT:uint = 24;
+		internal static const XML_OUTPUT_FILENAME:String = "OlogOutput";
+		// Text appearance
+		internal static const FONT:String = "_typewriter";
+		internal static const SIZE:uint = 10;
+		internal static const LEADING:int = 1;
+		//										   0-Trace	  1-Info	 2-Warning	3-Error	   4-Success  5-Event	 6-(Spare)	7-(Spare)  8-(Spare)  9-Marker
+		internal static const TEXT_COLORS:Array = ["#b1b3a6", "#ffffff", "#ffcc00", "#ff5a5a", "#42d73b", "#13d0ff", "#ffffff", "#ffffff", "#ffffff", "#00ffff"];
+		internal static const TEXT_COLOR_LAST_INDEX:int = 5;
+		internal static const MARKER_COLOR_INDEX:int = 9;
+		internal static const TAB_STOPS:Array = [10, 250, 300, 400, 500, 600, 700];
+		// Strings used in log window
+		internal static const ORIGIN_DELIMITER:String = " › ";
+		internal static const LINE_START_DELIMITER:String = " ";
+		internal static const AFTER_LINE_START:String = " ";
+		internal static const EMPTY_MSG_STRING:String = "[empty message]";
+		// Context menu item
+		internal static const CMI_OPEN_LABEL:String = "Open log";
+		internal static const CMI_CLOSE_LABEL:String = "Close log";
+		internal static const PWPROMPT_LABEL:String = "Password:";
+		// Types with special handling
+		internal static const OLOG_EVENT:String = "OlogEvent";
+		internal static const AI_LOGGER_EVENT:String = "AILoggerEvent";
+		internal static const SUPPORTED_TYPES:Array = ["String","Number","int","Array","XML","XMLList","Vector","XML","Sprite", 
+		"MovieClip","Event","Error",AI_LOGGER_EVENT];
+	}
+}
