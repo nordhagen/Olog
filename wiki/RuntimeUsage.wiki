@@ -1,4 +1,5 @@
 #describes how to access and use Olog when your application is running
+
 = Introduction =
 How to use Olog when your application is running
 == While window hidden ==
