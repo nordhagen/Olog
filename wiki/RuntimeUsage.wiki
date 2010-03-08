@@ -1,0 +1,20 @@
+#describes how to access and use Olog when your application is running
+= Introduction =
+How to use Olog when your application is running
+== While window hidden ==
+ * Press SHIFT + Enter to open log window.
+ * If a password is set, a prompt will display first.
+ * The password prompt will close and window will open as soon as the correct password is entered.
+ * Alternatively, press ESC to close the password prompt.
+
+== While window open ==
+ * Title bar displays current version of Olog and newer version if one is available, as well as time of movie start.
+ * Scrolling works with the up/down arrows as well as home/end and the mouse wheel as of Flash Player 10.1.
+ * Minimize/maximize/close window with the buttons in the top left.
+
+== Filtering ==
+ * You can filter the lines visible in the log window by their level property. Press the number keys equivalent to the level you want show, e.g. pressing 3 will display only warnings
+ * Reset the filtering by pressing ESC.
+ 
+== While minimized ==
+ * Title bar displays number of new log lines since window was minimized in a green field on the right.
