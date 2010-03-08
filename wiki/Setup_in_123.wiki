@@ -1,0 +1,19 @@
+#Three easy steps to use Olog
+= Olog has many features. But if all you want is an easily accessible trace statement, here's what you do =
+
+== 1. Get Olog ==
+Download/checkout Olog from the source tab. You can download the ZIP-file containing source, swc and documentation. Or if you'd like an easier way to stay updated, use you SVN client to connect to the repository. Then point you editor to the src folder.
+
+== 2. Import and add to stage == 
+You will of course need to import Olog like this:
+
+{{{import no.olog.Olog;}}}
+
+Then, to initialize and make Olog visible:
+
+{{{addChild( Olog.window );}}}
+
+== 3. Start logging ==
+Each time you feel the urge to write a trace statement, make a habit of writing this istead:
+
+{{{Olog.trace( "Your trace message" );}}}
