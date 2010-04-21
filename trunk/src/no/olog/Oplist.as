@@ -26,7 +26,7 @@ package no.olog
 		internal static var height:int = -1;
 		// Title bar
 		internal static const NAME:String = "Olog";
-		internal static const VERSION:String = "0.9b";
+		internal static const VERSION:String = "1.0.0";
 		internal static const TB_FONT:String = "_sans";
 		internal static const TB_FONT_SIZE:uint = 11;
 		internal static const TB_COLORS:Array = [0x595959, 0x262626, 0x191919, 0x070707];
@@ -45,7 +45,7 @@ package no.olog
 		internal static const FIXES:String = "Bug fixes:";
 		internal static const NOTES:String = "Notes:";
 		internal static const DL_LABEL:String = "Download here!";
-		internal static const DL_LINK:String = "http://www.oyvindnordhagen.com/blog/ailogger/";
+		internal static const DL_LINK:String = "http://www.oyvindnordhagen.com/blog/olog/";
 		// Password prompt
 		internal static const PW_BOX_WIDTH:Number = 200;
 		internal static const PW_BOX_HEIGHT:Number = 30;
@@ -72,7 +72,7 @@ package no.olog
 		internal static const SIZE:uint = 10;
 		internal static const LEADING:int = 1;
 		//										   0-Trace	  1-Info	 2-Warning	3-Error	   4-Success  5-Event	 6-(Spare)	7-(Spare)  8-(Spare)  9-Marker
-		internal static const TEXT_COLORS:Array = ["#b1b3a6", "#ffffff", "#ffcc00", "#ff5a5a", "#42d73b", "#13d0ff", "#ffffff", "#ffffff", "#ffffff", "#00ffff"];
+		internal static const TEXT_COLORS:Array = ["#9AB28E", "#ffffff", "#ffcc00", "#FF7F7F", "#42d73b", "#4CDBFF", "#ffffff", "#ffffff", "#ffffff", "#00ffff"];
 		internal static const TEXT_COLOR_LAST_INDEX:int = 5;
 		internal static const MARKER_COLOR_INDEX:int = 9;
 		internal static const TAB_STOPS:Array = [10, 250, 300, 400, 500, 600, 700];
@@ -89,6 +89,6 @@ package no.olog
 		internal static const OLOG_EVENT:String = "OlogEvent";
 		internal static const AI_LOGGER_EVENT:String = "AILoggerEvent";
 		internal static const SUPPORTED_TYPES:Array = ["String","Number","int","Array","XML","XMLList","Vector","XML","Sprite", 
-		"MovieClip","Event","Error",AI_LOGGER_EVENT];
+		"MovieClip","Event","ErrorEvent","Error",AI_LOGGER_EVENT];
 	}
 }
