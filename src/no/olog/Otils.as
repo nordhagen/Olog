@@ -53,11 +53,19 @@ package no.olog
 					result = classNameSupported + " (type:" + className + ", name:" + message.name + ", frames:" + message.totalFrames + ")";
 					break;
 				
+				case "ErrorEvent":
+					result = className + "." + _styleEventType( message.type );
+					if (message.target) result += " from " + message.target;
+					if (message.target != message.currentTarget) result += " (via " + message.currentTarget + "): ";
+					else result += ": ";
+					result += message.text;
+					break;
+					
 				case "Event":
 					result = className + "." + _styleEventType( message.type );
 					if (message.target) result += " from " + message.target;
 					if (message.target != message.currentTarget) result += " (via " + message.currentTarget + "): ";
-				else result += ": ";
+					else result += ": ";
 					result += _parseProperties( message );
 					break;
 
@@ -271,11 +279,8 @@ package no.olog
 			switch (supportedType)
 			{
 				case "Error":
-					return 3;
-					break;
-
 				case "ErrorEvent":
-					return 2;
+					return 3;
 					break;
 
 				case "Event":

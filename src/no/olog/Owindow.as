@@ -95,7 +95,7 @@ package no.olog
 
 		internal static function get isOpen():Boolean
 		{
-			return _i.visible;
+			return (_i) ? _i.visible : false;
 		}
 
 		internal static function get isMinimized():Boolean

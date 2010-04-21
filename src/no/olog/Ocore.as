@@ -296,6 +296,7 @@ package no.olog
 				_passwordOk = true;
 				_closePWPrompt( );
 				Owindow.open( );
+				_writePendingLines();
 			}
 		}
 
@@ -368,7 +369,13 @@ package no.olog
 				_versionLoader.addEventListener( Event.COMPLETE, _onVersionHistoryResult );
 				_versionLoader.addEventListener( IOErrorEvent.IO_ERROR, _onVersionHistoryResult );
 				_versionLoader.addEventListener( SecurityErrorEvent.SECURITY_ERROR, _onVersionHistoryResult );
-				_versionLoader.load( new URLRequest( Oplist.VERSION_CHECK_URL ) );
+				try {
+					_versionLoader.load( new URLRequest( Oplist.VERSION_CHECK_URL ) );
+				}
+				catch (e:Error)
+				{
+					// Fail silent
+				}
 			}
 		}
 
@@ -384,11 +391,11 @@ package no.olog
 					trace( "<p><a href=\"event:" + Oplist.SHOW_VERSION_DETAILS + "\">" + str + "</a></p>", 4, null, true, true );
 					Otils.recordVersionCheckTime( );
 				}
-			}
-			else if (_versionCheckWasForced)
-			{
-				_versionCheckWasForced = false;
-				trace( "You are using the current version of Olog", 4 );
+				else if (_versionCheckWasForced)
+				{
+					_versionCheckWasForced = false;
+					trace( "You are using the current version of Olog", 4 );
+				}
 			}
 		}
 

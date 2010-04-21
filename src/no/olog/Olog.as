@@ -96,7 +96,7 @@ package no.olog
 		 * @param numLines Number of empty lines to write 
 		 * @return void
 		 */
-		public static function cr(numLines:int):void
+		public static function cr(numLines:int = 1):void
 		{
 			Ocore.writeNewline( numLines );
 		}

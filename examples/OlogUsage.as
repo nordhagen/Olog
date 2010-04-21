@@ -110,7 +110,7 @@ package
 			Olog.open( );
 			
 			// Empty log window
-			//Olog.clear();
+			Olog.clear();
 			
 			// Minimize to title bar Mac OS 9-style
 			Olog.minimize();
