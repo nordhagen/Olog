@@ -54,7 +54,7 @@ package no.olog
 		internal static function getLogCSS():StyleSheet
 		{
 			var p:Object = {fontFamily:Oplist.FONT, fontSize:Oplist.SIZE, leading:Oplist.LEADING};
-			var a:Object = {textDecoration:"underline", color:Oplist.TEXT_COLORS[5]};
+			var a:Object = {textDecoration:"underline", color:Oplist.TEXT_COLORS[1]};
 			var css:StyleSheet = new StyleSheet( );
 			css.setStyle( "p", p );
 			css.setStyle( "a", a );
@@ -138,6 +138,9 @@ package no.olog
 				var t:String = _getCurrentTime( );
 				var r:String = _getRunTime( );
 				var line:Oline = new Oline( m, l, o, t, r, i, c, s, useLineStart, bypassValidation );
+				line.isTruncated = _evalTruncation( m );
+				line.truncationEnabled = line.isTruncated;
+				_lines[i] = line;
 				_evalAddOrRepeat( line );
 			}
 		}
@@ -219,7 +222,6 @@ package no.olog
 		private static function _addLine(line:Oline):void 
 		{
 			_lastLine = line;
-			_lines.push( line );
 			_filter( line );
 			if (Owindow.isOpen)
 				_writeLine( line );
@@ -296,7 +298,7 @@ package no.olog
 				_passwordOk = true;
 				_closePWPrompt( );
 				Owindow.open( );
-				_writePendingLines();
+				_writePendingLines( );
 			}
 		}
 
@@ -369,7 +371,8 @@ package no.olog
 				_versionLoader.addEventListener( Event.COMPLETE, _onVersionHistoryResult );
 				_versionLoader.addEventListener( IOErrorEvent.IO_ERROR, _onVersionHistoryResult );
 				_versionLoader.addEventListener( SecurityErrorEvent.SECURITY_ERROR, _onVersionHistoryResult );
-				try {
+				try 
+				{
 					_versionLoader.load( new URLRequest( Oplist.VERSION_CHECK_URL ) );
 				}
 				catch (e:Error)
@@ -383,12 +386,13 @@ package no.olog
 		{
 			if (e.type == Event.COMPLETE)
 			{
+				trace( e.target.data );
 				_versions = new XML( e.target.data );
 				var newestVersion:String = _versions.version[0].@id;
 				if (newestVersion != Oplist.VERSION)
 				{
 					var str:String = Oplist.NEW_VERSION_MSG.replace( "@version", newestVersion );
-					trace( "<p><a href=\"event:" + Oplist.SHOW_VERSION_DETAILS + "\">" + str + "</a></p>", 4, null, true, true );
+					trace( "<p><a href=\"event:" + Oplist.EVENT_VERSION_DETAILS + "\">" + str + "</a></p>", 4, null, true, true );
 					Otils.recordVersionCheckTime( );
 				}
 				else if (_versionCheckWasForced)
@@ -399,7 +403,34 @@ package no.olog
 			}
 		}
 
-		internal static function onNewVersionLink(e:TextEvent):void
+		internal static function onTextLink(e:TextEvent):void
+		{
+			var linkParts:Array = e.text.split( "@" );
+			var event:String = linkParts[0];
+			switch (event)
+			{
+				case Oplist.EVENT_OPEN_TRUNCATED:
+				case Oplist.EVENT_CLOSE_TRUNCATED:
+					_toggleTruncation( int( linkParts[1] ) );
+					break;
+				
+				case Oplist.EVENT_VERSION_DETAILS:
+					_traceVersionDetails( );
+					break;
+				
+				default:
+					throw new Error( "switch case unsupported" );
+			}
+		}
+
+		private static function _toggleTruncation(i:int):void 
+		{
+			var line:Oline = _lines[i] as Oline;
+			line.truncationEnabled = !line.truncationEnabled;
+			refreshLog( );
+		}
+
+		private static function _traceVersionDetails():void
 		{
 			var str:String = "<br><p>Version " + _versions.version[0].@id + " contains the following changes:</p>";
 			
@@ -496,11 +527,36 @@ package no.olog
 
 		private static function _getLogTextFromVO(oline:Oline):String
 		{
+			var rawText:String;
+			if (!oline.isTruncated)
+				rawText = oline.msg;
+			else
+				rawText = (oline.truncationEnabled) ? _getTruncated( oline.msg, oline.index ) : _getUntruncated(oline.msg, oline.index);
+			
 			var lStart:String = (oline.useLineStart) ? _getLineStart( oline.index, oline.timestamp, oline.runtime ) : "";
-			var msgText:String = (oline.repeatCount == 0) ? oline.msg : oline.msg + " (" + oline.repeatCount + ")";
-			var msg:String = (!oline.bypassValidation) ? formatText( msgText, oline.level ) : oline.msg;
+			var repeatCount:String = (oline.repeatCount == 0) ? "" : " (" + oline.repeatCount + ")";
+			var msg:String = (!oline.bypassValidation) ? formatText( rawText, oline.level ) : oline.msg;
 			var origin:String = _getOrigin( oline.origin );
-			return lStart + msg + origin;
+			return lStart + msg + repeatCount + origin;
+		}
+
+		private static function _evalTruncation(msg:String):Boolean 
+		{
+			var truncateChars:Boolean = Oplist.maxUntruncatedLength > 0 && msg.length > Oplist.maxUntruncatedLength;
+			var truncateLines:Boolean = Oplist.truncateMultiline && msg.indexOf( "\n" ) != -1;
+			return truncateChars || truncateLines;
+		}
+
+		private static function _getTruncated(msg:String, index:int):String 
+		{
+			if (Oplist.truncateMultiline) msg = msg.substr(0, msg.indexOf("\n"));
+			if (Oplist.maxUntruncatedLength > -1) msg = msg.substr( 0, Oplist.maxUntruncatedLength - 3 );
+			return msg + "... " + "<a href=\"event:" + Oplist.EVENT_OPEN_TRUNCATED + "@" + index + "\">" + Oplist.OPEN_TRUNCATED_LABEL + "</a>";
+		}
+
+		private static function _getUntruncated(msg:String, index:int):String 
+		{
+			return msg + " <a href=\"event:" + Oplist.EVENT_OPEN_TRUNCATED + "@" + index + "\">" + Oplist.CLOSE_TRUNCATED_LABEL + "</a>";
 		}
 
 		private static function _getOrigin(origin:String):String 

@@ -16,6 +16,8 @@ package no.olog
 		internal static var enableVersionCheck:Boolean = true;
 		internal static var keyBoardEnabled:Boolean = true;
 		internal static var stackRepeatedMessages:Boolean = true;
+		internal static var maxUntruncatedLength:int = -1;
+		internal static var truncateMultiline:Boolean = false;
 		
 		// Defaults bounds
 		internal static const DEFAULT_WIDTH:int = 400;
@@ -24,9 +26,10 @@ package no.olog
 		internal static var y:int = -1;
 		internal static var width:int = -1;
 		internal static var height:int = -1;
+		
 		// Title bar
 		internal static const NAME:String = "Olog";
-		internal static const VERSION:String = "1.0.0";
+		internal static const VERSION:String = "1.1.0";
 		internal static const TB_FONT:String = "_sans";
 		internal static const TB_FONT_SIZE:uint = 11;
 		internal static const TB_COLORS:Array = [0x595959, 0x262626, 0x191919, 0x070707];
@@ -35,20 +38,31 @@ package no.olog
 		internal static const TB_PADDING:int = 13;
 		internal static const TB_HEIGHT:int = 28;
 		internal static const TB_ALIGN:String = "center";
+		
 		// Version check
 		internal static const VERSION_CHECK_URL:String = "http://www.oyvindnordhagen.com/olog/OlogVersionHistory.xml";
 		internal static const NEW_VERSION_MSG:String = "Olog version @version available!";
 		internal static const DAY_IN_MS:int = 86400000;
 		internal static const VERSION_CHECK_INTERVAL_DAYS:int = 7;
-		internal static const SHOW_VERSION_DETAILS:String = "detailsLink";
 		internal static const FEATURES:String = "New features:";
 		internal static const FIXES:String = "Bug fixes:";
 		internal static const NOTES:String = "Notes:";
 		internal static const DL_LABEL:String = "Download here!";
 		internal static const DL_LINK:String = "http://www.oyvindnordhagen.com/blog/olog/";
+		
+		// Text events
+		internal static const EVENT_OPEN_TRUNCATED:String = "openTruncated";
+		internal static const EVENT_CLOSE_TRUNCATED:String = "closeTruncated";
+		internal static const EVENT_VERSION_DETAILS:String = "eventVersionDetails";
+		
+		// Truncation
+		internal static const OPEN_TRUNCATED_LABEL:String = "Show »";
+		internal static const CLOSE_TRUNCATED_LABEL:String = "« Hide";
+		
 		// Password prompt
 		internal static const PW_BOX_WIDTH:Number = 200;
 		internal static const PW_BOX_HEIGHT:Number = 30;
+		
 		// Log window appearance
 		internal static const BG_ALPHA:Number = 0.9;
 		internal static const BG_COL:uint = 0x1C1C1C;
@@ -62,11 +76,13 @@ package no.olog
 		internal static const MIN_HEIGHT:int = 100;
 		internal static const PADDING:int = 5;
 		internal static const TEXT_INDENT:int = 10;
+		
 		// Pref pane
 		internal static const PREF_PANE_BG_COLOR:uint = 0x999999;
 		internal static const PREFS_BUTTON_WIDTH:uint = 100;
 		internal static const PREFS_BUTTON_HEIGHT:uint = 24;
 		internal static const XML_OUTPUT_FILENAME:String = "OlogOutput";
+		
 		// Text appearance
 		internal static const FONT:String = "_typewriter";
 		internal static const SIZE:uint = 10;
@@ -76,15 +92,18 @@ package no.olog
 		internal static const TEXT_COLOR_LAST_INDEX:int = 5;
 		internal static const MARKER_COLOR_INDEX:int = 9;
 		internal static const TAB_STOPS:Array = [10, 250, 300, 400, 500, 600, 700];
+		
 		// Strings used in log window
 		internal static const ORIGIN_DELIMITER:String = " › ";
 		internal static const LINE_START_DELIMITER:String = " ";
 		internal static const AFTER_LINE_START:String = " ";
 		internal static const EMPTY_MSG_STRING:String = "[empty message]";
+		
 		// Context menu item
 		internal static const CMI_OPEN_LABEL:String = "Open log";
 		internal static const CMI_CLOSE_LABEL:String = "Close log";
 		internal static const PWPROMPT_LABEL:String = "Password:";
+	
 		// Types with special handling
 		internal static const OLOG_EVENT:String = "OlogEvent";
 		internal static const AI_LOGGER_EVENT:String = "AILoggerEvent";

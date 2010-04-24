@@ -111,6 +111,20 @@ package no.olog
 		}
 		
 		/**
+		 * Sets truncation options for log window.
+		 * @param truncateMultiline Boolean value; true truncates all multiline messages after first line, unless first line is longer than maxChars. false shows all.   
+		 * @param maxChars Integer specifying the maximum allowed character count before truncating. null or -1 disables max char truncation.   
+		 * @return void
+		 */
+		public static function setTruncation(truncateMultiline:Object = null, maxChars:Object = null):void
+		{
+			if (truncateMultiline is Boolean) Oplist.truncateMultiline = truncateMultiline as Boolean;
+			else Oplist.truncateMultiline = false;
+			if (maxChars is int) Oplist.maxUntruncatedLength = int(maxChars);
+			else Oplist.maxUntruncatedLength = -1;
+		}
+
+		/**
 		 * Checks the Olog website for a newer version. Outputs the results to the log window.  
 		 * @return void
 		 */

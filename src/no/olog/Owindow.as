@@ -410,7 +410,7 @@ package no.olog
 			_field.y = Oplist.TB_HEIGHT + Oplist.PADDING; 
 			_field.mouseWheelEnabled = true;
 			_field.addEventListener( MouseEvent.MOUSE_WHEEL, _onMouseWheel );
-			_field.addEventListener( TextEvent.LINK, Ocore.onNewVersionLink );
+			_field.addEventListener( TextEvent.LINK, Ocore.onTextLink );
 			addChild( _field );
 		}
 
