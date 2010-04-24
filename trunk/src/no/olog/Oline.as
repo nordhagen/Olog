@@ -17,6 +17,8 @@ package no.olog
 		internal var useLineStart:Boolean;
 		internal var repeatCount:int = 0;
 		internal var bypassValidation:Boolean;
+		internal var isTruncated:Boolean;
+		internal var truncationEnabled:Boolean;
 
 		public function Oline(msg:String, level:uint, origin:String, timestamp:String, runtime:String,
 		index:int, type:String, supportedType:String, useLineStart:Boolean = true, bypassValidation:Boolean = false):void
