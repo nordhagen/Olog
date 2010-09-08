@@ -1,4 +1,4 @@
-<version id="1.1.7">
+<version id="1.2.0">
 	<features>
 		<feature>Added shorthand function otrace()</feature>
 		<feature>Added utility function breakPoint() for logging virtual break points</feature>
@@ -8,9 +8,9 @@
 		<feature>Log messages from Olog itself now have a proper origin</feature>
 		<feature>More thorough introspection when using describe method. More properties found.</feature>
 		<feature>Added automatic regular trace output via property enableRegularTraceOutput</feature>
-		<feature>Added memory usage display in title bar</feature>	</features>
+		<feature>Added memory usage display in title bar</feature>
 		<feature>Update check is off by default</feature>
-		<feature>Describe robustness</feature>	<fixes>
+		<feature>Describe robustness</feature>
 		<feature>More info when tracing runtime info</feature>
 		<feature>Added line wrapping preference</feature>
 	</features>
