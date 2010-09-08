@@ -1,8 +1,13 @@
 package no.olog 
 {
+	import flash.events.TimerEvent;
 	import flash.geom.Rectangle;
 	import flash.net.SharedObject;
+	import flash.system.System;
+	import flash.utils.Dictionary;
+	import flash.utils.Timer;
 	import flash.utils.describeType;
+	import flash.utils.getQualifiedClassName;
 	/**
 	 * @author Oyvind Nordhagen
 	 * @date 19. feb. 2010
@@ -10,15 +15,16 @@ package no.olog
 	internal class Otils 
 	{
 		private static var _so:SharedObject;
+		private static var _memUsageUpdater:Timer;
 
-		public function Otils():void
+		public function Otils ():void
 		{
 		}
 
-		internal static function parseMsgType(message:Object):String 
+		internal static function parseMsgType (message:Object):String 
 		{
 			var className:String = getClassName( message );
-			var classNameSupported:String = getClassName( message, true );
+			var classNameSupported:String = getClassName( message , true );
 			var result:String;
 			switch (classNameSupported)
 			{
@@ -54,11 +60,13 @@ package no.olog
 					break;
 				
 				case "ErrorEvent":
-					result = className + "." + _styleEventType( message.type );
-					if (message.target) result += " from " + message.target;
-					if (message.target != message.currentTarget) result += " (via " + message.currentTarget + "): ";
-					else result += ": ";
-					result += message.text;
+					result = "";
+					var urlPos:int = message.text.indexOf( "URL:" );
+					if (urlPos != -1) result += "File not found: " + message.text.substr( urlPos + 5 );
+					else result += message.text;
+					result += " (" + _styleEventType( message.type ) + ")";
+					if (message.target) result += Oplist.ORIGIN_DELIMITER + getClassName( message.target );
+					if (message.target != message.currentTarget) result += " (via " + getClassName( message.currentTarget ) + ")";
 					break;
 					
 				case "Event":
@@ -77,21 +85,21 @@ package no.olog
 					result = String( message );
 			}
 			
-			return result.replace( /</g, "&lt;" ).replace( /\>/g, "&gt;" );
+			return result.replace( /</g , "&lt;" ).replace( /\>/g , "&gt;" );
 			;
 		}
 
-		private static function _getClosestStackMethod(message:Object):String 
+		private static function _getClosestStackMethod (message:Object):String 
 		{
-			return message.getStackTrace( ).split( "\n" )[1].replace( "\t", " " );
+			return message.getStackTrace( ).split( "\n" )[1].replace( "\t" , " " );
 		}
 
-		private static function _styleEventType(type:String):String 
+		private static function _styleEventType (type:String):String 
 		{
-			return type.replace( /[A-Z]/g, "_$&" ).toUpperCase( );
+			return type.replace( /[A-Z]/g , "_$&" ).toUpperCase( );
 		}
 
-		private static function _parseProperties(message:Object, includeType:Boolean = false):String 
+		private static function _parseProperties (message:Object, includeType:Boolean = false):String 
 		{
 			var result:String = "";
 			var props:XMLList = describeType( message ).accessor;
@@ -107,13 +115,13 @@ package no.olog
 			return result;
 		}
 
-		internal static function parseOrigin(origin:Object = null):String 
+		internal static function parseOrigin (origin:Object = null):String 
 		{
 			var result:String = (origin is String) ? String( origin ) : getClassName( origin );
 			return (result != "null") ? result : "";
 		}
 
-		internal static function getClassName(o:Object, supported:Boolean = false):String
+		internal static function getClassName (o:Object, supported:Boolean = false):String
 		{
 			if (o == null) return "null";
 			
@@ -138,7 +146,7 @@ package no.olog
 			return result;
 		}
 
-		private static function extractClassNameFromPackage(packageString:String):String 
+		private static function extractClassNameFromPackage (packageString:String):String 
 		{
 			if (packageString.indexOf( "::" ) != -1)
 			{
@@ -150,7 +158,7 @@ package no.olog
 			}
 		}
 
-		private static function _isSupportedClass(name:String):Boolean 
+		private static function _isSupportedClass (name:String):Boolean 
 		{
 			var result:Boolean = false;
 			var num:int = Oplist.SUPPORTED_TYPES.length;
@@ -165,40 +173,46 @@ package no.olog
 			return result;
 		}
 
-		private static function _extractClassOnly(className:String):String
+		private static function _extractClassOnly (className:String):String
 		{
 			if (className.indexOf( ":" ) != -1) return className.split( "::" )[1];
 			else return className;
 		}
 
-		internal static function validateLevel(level:int):int 
+		internal static function validateLevel (level:int):int 
 		{
-			return Math.min( Math.max( level, 0 ), Oplist.TEXT_COLOR_LAST_INDEX );
+			return Math.min( Math.max( level , 0 ) , Oplist.TEXT_COLOR_LAST_INDEX );
 		}
 
-		internal static function getDefaultWindowBounds():Rectangle
+		internal static function getDefaultWindowBounds ():Rectangle
 		{
+			var padding:int = Oplist.PADDING;
+			var paddingX2:int = padding * 2;
 			var b:Rectangle = new Rectangle( );
 			_so = SharedObject.getLocal( "OlogSettings" );
 			if (_so)
 			{
-				b.x = Math.max( uint( _so.data.x ), Oplist.PADDING );
-				b.y = Math.max( uint( _so.data.y ), Oplist.PADDING );
-				b.width = uint( _so.data.width );
-				b.height = uint( _so.data.height );
+				var fillScreenWidth:int = Owindow.instance.stage.stageWidth - paddingX2;
+				var fillScreenHeight:int = Owindow.instance.stage.stageHeight - paddingX2;
+				var restoredWidth:int = uint( _so.data.width );
+				var restoredHeight:int = uint( _so.data.height );
+				b.x = Math.max( uint( _so.data.x ) , padding );
+				b.y = Math.max( uint( _so.data.y ) , padding );
+				b.width = Math.min( restoredWidth , fillScreenWidth );
+				b.height = Math.min( restoredHeight , fillScreenHeight );
 			}
 			else
 			{
-				b.x = Math.max( Oplist.x, Oplist.PADDING );
-				b.y = Math.max( Oplist.y, Oplist.PADDING );
+				b.x = Math.max( Oplist.x , padding );
+				b.y = Math.max( Oplist.y , padding );
 				b.width = (Oplist.width != -1) ? Oplist.width : Oplist.DEFAULT_WIDTH;
 				b.height = (Oplist.height != -1) ? Oplist.height : Oplist.DEFAULT_HEIGHT;
 			}
 			
 			return b;
 		}
-
-		internal static function getDaysSinceVersionCheck():int
+		
+		internal static function getDaysSinceVersionCheck ():int
 		{
 			_so = SharedObject.getLocal( "OlogSettings" );
 			if (_so)
@@ -213,39 +227,40 @@ package no.olog
 			}
 		}
 
-		internal static function getSavedMinimizedState():Boolean
+		internal static function getSavedMinimizedState ():Boolean
 		{
 			_so = SharedObject.getLocal( "OlogSettings" );
 			return (_so) ? Boolean( _so.data.isMinimized ) : false;
 		}
 
-		internal static function getSavedOpenState():Boolean
+		internal static function getSavedOpenState ():Boolean
 		{
 			_so = SharedObject.getLocal( "OlogSettings" );
 			return (_so) ? Boolean( _so.data.isOpen ) : true;
 		}
 
-		internal static function recordWindowState():void
+		internal static function recordWindowState ():void
 		{
 			if (!Oplist.rememberWindowState) return;
 			if (!_so) _so = SharedObject.getLocal( "OlogSettings" );
-			_so.data.x = Math.min( Math.max( 0, Owindow.instance.x ), Owindow.instance.stage.stageWidth );
-			_so.data.y = Math.min( Math.max( 0, Owindow.instance.y ), Owindow.instance.stage.stageHeight );
+			_so.data.x = Math.min( Math.max( 0 , Owindow.instance.x ) , Owindow.instance.stage.stageWidth );
+			_so.data.y = Math.min( Math.max( 0 , Owindow.instance.y ) , Owindow.instance.stage.stageHeight );
 			_so.data.width = Owindow.instance.width;
 			_so.data.height = Owindow.instance.height;
 			_so.data.isMinimized = Owindow.isMinimized;
 			_so.data.isOpen = Owindow.isOpen;
+			_so.data.showMemoryUsage = Oplist.showMemoryUsage;
 			_savePersistentData( );
 		}
 
-		internal static function recordVersionCheckTime():void
+		internal static function recordVersionCheckTime ():void
 		{
 			if (!_so) _so = SharedObject.getLocal( "OlogSettings" );
 			_so.data.lastVersionCheck = new Date( ).getTime( );
 			_savePersistentData( );
 		}
 
-		private static function _savePersistentData():void
+		private static function _savePersistentData ():void
 		{
 			var flushStatus:String = null;
 			try
@@ -258,23 +273,23 @@ package no.olog
 			}
 		}
 
-		internal static function formatTime(ms:int):String 
+		internal static function formatTime (ms:int):String 
 		{
 			var d:Date = new Date( ms );
-			var strms:String = addLeadingZeroes( String( d.getMilliseconds( ) ), 3 );
-			var strsec:String = addLeadingZeroes( String( d.getSeconds( ) ), 2 );
-			var strmin:String = addLeadingZeroes( String( d.getMinutes( ) ), 2 );
+			var strms:String = addLeadingZeroes( String( d.getMilliseconds( ) ) , 3 );
+			var strsec:String = addLeadingZeroes( String( d.getSeconds( ) ) , 2 );
+			var strmin:String = addLeadingZeroes( String( d.getMinutes( ) ) , 2 );
 			var strhrs:String = String( d.getHours( ) - 1 );
 			return strhrs + ":" + strmin + ":" + strsec + "'" + strms;
 		}
 
-		internal static function addLeadingZeroes(numString:String, numZeroes:int = 2):String
+		internal static function addLeadingZeroes (numString:String, numZeroes:int = 2):String
 		{
 			while (numString.length < numZeroes) numString = "0" + numString;
 			return numString;
 		}
 
-		internal static function parseTypeAndLevel(supportedType:String, level:uint):int 
+		internal static function parseTypeAndLevel (supportedType:String, level:uint):int 
 		{
 			switch (supportedType)
 			{
@@ -292,9 +307,15 @@ package no.olog
 			}
 		}
 
-		internal static function getDescriptionOf(o:Object):String 
+		internal static function getLevelColorAsUint (level:uint):uint
 		{
-			var separator:String = "\n\t" + Ocore.formatText( "-", 0 );
+			return uint( "0x" + String( Oplist.TEXT_COLORS_HEX[level] ).substr( 1 ) );
+		}
+
+		internal static function getDescriptionOf (o:Object):String 
+		{
+			trace(describeType( o ));
+			var separator:String = "\n\t" + Ocore.formatText( "-" , 0 );
 			var result:String = "\n\n";
 			var d:XML = describeType( o );
 			var type:String = getClassName( o );
@@ -302,9 +323,17 @@ package no.olog
 			if (d.@isDynamic) propsArr.push( "dynamic" );
 			if (d.@isStatic) propsArr.push( "static" );
 			if (d.@isFinal) propsArr.push( "final" );
-			
-			result += Ocore.formatText( "\tDescription of " + type, 1 );
-			if (propsArr.length > 0) result += " (" + propsArr.join( ", " ) + ")";
+			var objectName:String;
+			try
+			{
+				objectName = " (" + o.name + ")";
+			}
+			catch (e:Error)
+			{
+				objectName = "";
+			}
+			result += Ocore.formatText( "\tDescription of " + type + objectName , 1 );
+			if (propsArr.length > 0) result += Ocore.formatText( " (" + propsArr.join( ", " ) + ")" , 0 );
 			
 			var baseList:XMLList = d.extendsClass;
 			var heritage:String = "";
@@ -315,7 +344,9 @@ package no.olog
 				if (curClass < numClasses - 1) heritage += "-";
 			}
 			
-			result += Ocore.formatText( "\n\tInheritance tree: " + heritage, 0 );
+			result += Ocore.formatText( "\n\tInheritance tree: " + heritage , 0 );
+			
+			var parsedVars:Dictionary = new Dictionary( true );
 			
 			var varList:XMLList = d.variable;
 			var variables:String = "";
@@ -323,10 +354,35 @@ package no.olog
 			for (var curVar:int = 0; curVar < numVars; curVar++)
 			{
 				var v:XML = varList[curVar];
-				variables += "\n\tvar " + v.@name + Ocore.formatText( ":" + extractClassNameFromPackage( v.@type ), 0 ) + "\t= " + o[v.@name];
+				//variables += "\n\tvar " + v.@name + Ocore.formatText( ":" + extractClassNameFromPackage( v.@type ), 0 ) + "\t= " + o[v.@name];
+				parsedVars[v.@name] = {name:v.@name , type:v.@type};
 			}
 			
-			if (numVars > 0) result += separator + "\n\t" + Ocore.formatText( variables, 1 );
+			for (var p:String in o)
+			{
+				//if (variables.indexOf( p ) != -1) continue;
+				if (parsedVars[p]) continue;
+				var className:String = getQualifiedClassName( o[p] );
+				//variables += "\n\tvar " + p + Ocore.formatText( ":" + extractClassNameFromPackage( className ), 0 ) + "\t= " + o[p];
+				parsedVars[p] = {name:p , type:className};
+				numVars++;
+			}
+			
+			for each (var item:Object in parsedVars)
+			{
+				var instanceName:String;
+				try 
+				{ 
+					instanceName = " (" + o[item.name].name + ")"; 
+				}
+				catch (e:Error) 
+				{ 
+					instanceName = ""; 
+				}
+				variables += "\n\tvar " + item.name + Ocore.formatText( ":" + extractClassNameFromPackage( item.type ) , 0 ) + "\t= " + o[item.name] + instanceName;
+			}
+			
+			if (numVars > 0) result += separator + "\n\t" + Ocore.formatText( variables , 1 );
 			
 			var constList:XMLList = d.constant;
 			var constants:String = "";
@@ -334,13 +390,58 @@ package no.olog
 			for (var curConst:int = 0; curConst < numConst; curConst++)
 			{
 				var c:XML = constList[curConst];
-				constants += "\n\tconst " + c.@name + Ocore.formatText( ":" + extractClassNameFromPackage( c.@type ), 0 ) + "\t= " + o[c.@name];
+				constants += "\n\tconst " + c.@name + Ocore.formatText( ":" + extractClassNameFromPackage( c.@type ) , 0 ) + "\t= " + o[c.@name];
 			}
 			
-			if (numConst > 0) result += separator + "\n\t" + Ocore.formatText( constants, 1 );
-			result += "\n\t" + Ocore.formatText( "-", 0 );
-			result += "\n\t" + Ocore.formatText( (numVars + numConst) + " values found", 1 ) + "\n";
+			if (numConst > 0) result += separator + "\n\t" + Ocore.formatText( constants , 1 );
+			result += "\n\t" + Ocore.formatText( "-" , 0 );
+			result += "\n\t" + Ocore.formatText( (numVars + numConst) + " values found" , 1 ) + "\n";
 			return result;
+		}
+
+		internal static function getLineStart (index:int, timestamp:String, runtime:String):String
+		{
+			if (!Oplist.enableTimeStamp && !Oplist.enableLineNumbers && !Oplist.enableRunTime) return "";
+			var result:String = "[";
+			if (Oplist.enableLineNumbers) result += Otils.addLeadingZeroes( String( index ) , 3 );
+			if (Oplist.enableTimeStamp) result += (Oplist.enableLineNumbers) ? Oplist.LINE_START_DELIMITER + timestamp : timestamp;
+			if (Oplist.enableRunTime) result += (Oplist.enableTimeStamp || Oplist.enableLineNumbers) ? Oplist.LINE_START_DELIMITER + runtime : runtime;
+			result += "]" + Oplist.AFTER_LINE_START;
+			return result;
+		}
+
+		internal static function regularTrace (oline:Oline):void 
+		{
+			var lStart:String = (oline.useLineStart) ? getLineStart( oline.index , oline.timestamp , oline.runtime ) : "";
+			var levelString:String = Oplist.LEVEL_STRINGS[oline.level];
+			var repeatCount:String = (oline.repeatCount == 1) ? "" : " (" + oline.repeatCount + ")";
+			var msg:String = oline.msg.replace( /<\/?.+?>/gi , "" ).replace( /\t/ , " " );
+			trace( lStart + levelString + msg + repeatCount + Oplist.ORIGIN_DELIMITER_TXT + oline.origin );
+		}
+
+		internal static function stopMemoryUsageUpdater ():void 
+		{
+			if (_memUsageUpdater)
+			{
+				_memUsageUpdater.stop( );
+				_memUsageUpdater.removeEventListener( TimerEvent.TIMER , _updateMemoryUsage );
+				_memUsageUpdater = null;
+			}
+		}
+
+		internal static function startMemoryUsageUpdater ():void 
+		{
+			if (Oplist.showMemoryUsage && !_memUsageUpdater)
+			{
+				_memUsageUpdater = new Timer( 1000 );
+				_memUsageUpdater.addEventListener( TimerEvent.TIMER , _updateMemoryUsage );
+				_memUsageUpdater.start( );
+			}
+		}
+
+		private static function _updateMemoryUsage (e:TimerEvent):void 
+		{
+			Owindow.displayMemoryUsage( Number((System.totalMemory * 0.000000954).toFixed(1)) );
 		}
 	}
 }

@@ -24,7 +24,7 @@ package no.olog
 		internal static var alwaysOnTop:Boolean = true;
 		internal static var scrollOnNewline:Boolean = true;
 		private static var _stage:Stage;
-		private static var _lineNumber:uint;
+		private static var _lineNumber:int = -1;
 		private static var _versionLoader:URLLoader;
 		private static var _versions:XML;
 		private static var _password:String;
@@ -40,7 +40,6 @@ package no.olog
 		private static var _lastLine:Oline = new Oline( "", 0, null, "", "", 0, "", "" );
 		private static var _runTimeMarkers:Array = new Array( );
 		private static var _numLinesPendingWrite:int;
-		private static var _versionCheckWasForced:Boolean;
 
 		public function Ocore():void
 		{
@@ -48,17 +47,17 @@ package no.olog
 
 		internal static function formatText(text:String, level:int):String 
 		{
-			return "<font color=\"" + Oplist.TEXT_COLORS[level] + "\">" + text + "</font>";
+			return "<font color=\"" + Oplist.TEXT_COLORS_HEX[level] + "\">" + text + "</font>";
 		}
 
 		internal static function getLogCSS():StyleSheet
 		{
 			var p:Object = {fontFamily:Oplist.FONT, fontSize:Oplist.SIZE, leading:Oplist.LEADING};
-			var a:Object = {textDecoration:"underline", color:Oplist.TEXT_COLORS[1]};
+			var a:Object = {textDecoration:"underline", color:Oplist.TEXT_COLORS_HEX[1]};
 			var css:StyleSheet = new StyleSheet( );
 			css.setStyle( "p", p );
 			css.setStyle( "a", a );
-			return css; 
+			return css;
 		}
 
 		internal static function getTitleBarCSS():StyleSheet
@@ -80,7 +79,6 @@ package no.olog
 		{
 			Owindow.exists = true;
 			_stage = e.target.stage;
-			evalVersionCheck( );
 			_evalKeyboard( );
 			_evalCMI( );
 			_initPWPrompt( );
@@ -106,7 +104,7 @@ package no.olog
 					_stage.removeEventListener( Event.ADDED, Owindow.moveToTop );
 			}
 		}
-
+		
 		internal static function trace(message:Object, level:uint = 1, origin:Object = null, useLineStart:Boolean = true, bypassValidation:Boolean = false):void 
 		{
 			var c:String = Otils.getClassName( message );
@@ -120,11 +118,13 @@ package no.olog
 				var m:String;
 				var s:String;
 				var l:int;
+				var isTruncated:Boolean;
 				if (!bypassValidation)
 				{
 					m = Otils.parseMsgType( message );
 					s = Otils.getClassName( message, true );
 					l = Otils.parseTypeAndLevel( s, level );
+					isTruncated = _evalTruncation( m );
 				}
 				else
 				{
@@ -138,7 +138,7 @@ package no.olog
 				var t:String = _getCurrentTime( );
 				var r:String = _getRunTime( );
 				var line:Oline = new Oline( m, l, o, t, r, i, c, s, useLineStart, bypassValidation );
-				line.isTruncated = _evalTruncation( m );
+				line.isTruncated = isTruncated;
 				line.truncationEnabled = line.isTruncated;
 				_lines[i] = line;
 				_evalAddOrRepeat( line );
@@ -147,14 +147,15 @@ package no.olog
 
 		private static function _evalAddOrRepeat(line:Oline):void 
 		{
-			if (line.msg != _lastLine.msg || line.level != _lastLine.level ||  !Oplist.stackRepeatedMessages) _addLine( line );
+			if (line.msg != _lastLine.msg || line.level != _lastLine.level || !Oplist.stackRepeatedMessages) _addLine( line );
 			else _incrementLastLineRepeat( );
+			if (Oplist.enableRegularTraceOutput) Otils.regularTrace( line );
 		}
 
 		private static function _incrementLastLineRepeat():void 
 		{
 			_lastLine.repeatCount++;
-			Owindow.replaceLastLine( _getLogTextFromVO( _lastLine ) );
+			if (Owindow.exists) Owindow.replaceLastLine( _getLogTextFromVO( _lastLine ) );
 		}
 
 		private static function _handleLogEvent(e:Object, type:String):void 
@@ -184,19 +185,37 @@ package no.olog
 					break;
 				
 				default:
-					trace( new Error( "Invalid event type for " + type + ":" + e.type ) );
+					trace( new Error( "Invalid event type for " + type + ":" + e.type ), 3, "Olog" );
 					return;
 			}
 		}
 
 		internal static function traceRuntimeInfo():void
 		{
-			var header:String = "\tRUNTIME INFORMATION\n";
-			var msg:String = "\tPlatform: " + Capabilities.os + "\n";
+			var header:String = "RUNTIME INFORMATION\n";
 			var type:String = (Capabilities.isDebugger) ? "Debugger" : "Standard";
-			msg += "\tPlayer: " + Capabilities.version + " (" + Capabilities.playerType + ", " + type + ")\n";
-			msg += "\tScreen: " + Capabilities.screenResolutionX + "x" + Capabilities.screenResolutionY + "\n";
-			if (Owindow.exists) msg += "\tStage: " + _stage.stageWidth + "x" + _stage.stageHeight + "\n" ;
+			var msg:String = "Platform:\t" + Capabilities.os + "\n";
+			msg += "Language:\t" + Capabilities.language.toUpperCase() + "\n";
+			msg += "HW Manufactorer:\t" + Capabilities.manufacturer + "\n";
+			msg += "Player:\t" + Capabilities.version + " (" + Capabilities.playerType + ", " + type + ")\n";
+			msg += "Screen:\t" + Capabilities.screenResolutionX + "x" + Capabilities.screenResolutionY + " @ " + Capabilities.screenDPI + " dpi\n";
+			if (Owindow.exists) msg += "Stage:\t" + _stage.stageWidth + "x" + _stage.stageHeight + "\n" ;
+			msg += "Accessibility aids:\t" + Capabilities.hasAccessibility + "\n";
+			msg += "AV Hardware Disabled:\t" + Capabilities.avHardwareDisable + "\n";
+			msg += "Audio:\t" + Capabilities.hasAudio + "\n";
+			msg += "Audio Encoder:\t" + Capabilities.hasAudioEncoder + "\n";
+			msg += "MP3 Decoder:\t" + Capabilities.hasMP3 + "\n";
+			msg += "Video Encoder:\t" + Capabilities.hasVideoEncoder + "\n";
+			msg += "Embedded Video:\t" + Capabilities.hasEmbeddedVideo + "\n";
+			msg += "Screen Broadcast:\t" + Capabilities.hasScreenBroadcast + "\n";
+			msg += "Screen Playback:\t" + Capabilities.hasScreenPlayback + "\n";
+			msg += "Streaming Audio:\t" + Capabilities.hasStreamingAudio + "\n";
+			msg += "Streaming Video:\t" + Capabilities.hasStreamingVideo + "\n";
+			msg += "Native SSL Sockets:\t" + Capabilities.hasTLS + "\n";
+			msg += "Input Method editor:\t" + Capabilities.hasIME + "\n";
+			msg += "Local File Read Access:\t" + Capabilities.localFileReadDisable + "\n";
+			msg += "Printing:\t" + Capabilities.hasPrinting + "\n";
+			
 			trace( header + msg, 0, null, false );
 		}
 
@@ -209,7 +228,7 @@ package no.olog
 		internal static function writeHeader(message:String, level:uint = 1):void
 		{
 			var m:String = "\n\t" + message.toUpperCase( ) + "\n";
-			trace( m, level, null, false );
+			trace( m, level, null, false, true );
 		}
 
 		internal static function writeNewline(numLines:int = 1):void
@@ -362,23 +381,19 @@ package no.olog
 			}
 		}
 
-		internal static function evalVersionCheck(forceCheck:Boolean = false):void 
+		internal static function checkForUpdates():void 
 		{
-			_versionCheckWasForced = forceCheck;
-			if (Oplist.enableVersionCheck && Otils.getDaysSinceVersionCheck( ) >= Oplist.VERSION_CHECK_INTERVAL_DAYS || forceCheck)
+			_versionLoader = new URLLoader( );
+			_versionLoader.addEventListener( Event.COMPLETE, _onVersionHistoryResult );
+			_versionLoader.addEventListener( IOErrorEvent.IO_ERROR, _onVersionHistoryResult );
+			_versionLoader.addEventListener( SecurityErrorEvent.SECURITY_ERROR, _onVersionHistoryResult );
+			try 
 			{
-				_versionLoader = new URLLoader( );
-				_versionLoader.addEventListener( Event.COMPLETE, _onVersionHistoryResult );
-				_versionLoader.addEventListener( IOErrorEvent.IO_ERROR, _onVersionHistoryResult );
-				_versionLoader.addEventListener( SecurityErrorEvent.SECURITY_ERROR, _onVersionHistoryResult );
-				try 
-				{
-					_versionLoader.load( new URLRequest( Oplist.VERSION_CHECK_URL ) );
-				}
-				catch (e:Error)
-				{
-					// Fail silent
-				}
+				_versionLoader.load( new URLRequest( Oplist.VERSION_CHECK_URL ) );
+			}
+			catch (e:Error)
+			{
+				trace("Check for updates not allowed by sandbox", 3, "Olog");
 			}
 		}
 
@@ -386,7 +401,6 @@ package no.olog
 		{
 			if (e.type == Event.COMPLETE)
 			{
-				trace( e.target.data );
 				_versions = new XML( e.target.data );
 				var newestVersion:String = _versions.version[0].@id;
 				if (newestVersion != Oplist.VERSION)
@@ -395,9 +409,8 @@ package no.olog
 					trace( "<p><a href=\"event:" + Oplist.EVENT_VERSION_DETAILS + "\">" + str + "</a></p>", 4, null, true, true );
 					Otils.recordVersionCheckTime( );
 				}
-				else if (_versionCheckWasForced)
+				else
 				{
-					_versionCheckWasForced = false;
 					trace( "You are using the current version of Olog", 4 );
 				}
 			}
@@ -532,10 +545,11 @@ package no.olog
 				rawText = oline.msg;
 			else
 				rawText = (oline.truncationEnabled) ? _getTruncated( oline.msg, oline.index ) : _getUntruncated(oline.msg, oline.index);
-			
-			var lStart:String = (oline.useLineStart) ? _getLineStart( oline.index, oline.timestamp, oline.runtime ) : "";
-			var repeatCount:String = (oline.repeatCount == 0) ? "" : " (" + oline.repeatCount + ")";
-			var msg:String = (!oline.bypassValidation) ? formatText( rawText, oline.level ) : oline.msg;
+				
+			var lStart:String = (oline.useLineStart) ? formatText( Otils.getLineStart( oline.index, oline.timestamp, oline.runtime ), 0) : "";
+			var repeatCount:String = (oline.repeatCount == 1) ? "" : formatText(" (" + oline.repeatCount + ")", 1);
+			//var msg:String = (!oline.bypassValidation) ? formatText( rawText, oline.level ) : oline.msg;
+			var msg:String = formatText( rawText, oline.level );
 			var origin:String = _getOrigin( oline.origin );
 			return lStart + msg + repeatCount + origin;
 		}
@@ -564,17 +578,6 @@ package no.olog
 			return (origin) ? formatText( Oplist.ORIGIN_DELIMITER + origin, 0 ) : "";
 		}
 
-		private static function _getLineStart(index:int, timestamp:String, runtime:String):String
-		{
-			if (!Oplist.enableTimeStamp && !Oplist.enableLineNumbers && !Oplist.enableRunTime) return "";
-			var result:String = "[";
-			if (Oplist.enableLineNumbers) result += Otils.addLeadingZeroes( String( index ), 3 );
-			if (Oplist.enableTimeStamp) result += (Oplist.enableLineNumbers) ? Oplist.LINE_START_DELIMITER + timestamp : timestamp;
-			if (Oplist.enableRunTime) result += (Oplist.enableTimeStamp || Oplist.enableLineNumbers) ? Oplist.LINE_START_DELIMITER + runtime : runtime;
-			result += "]" + Oplist.AFTER_LINE_START;
-			return formatText( result, 0 );
-		}
-
 		private static function _getCurrentTime():String 
 		{
 			return new Date( ).toTimeString( ).substr( 0, 8 );
@@ -600,16 +603,16 @@ package no.olog
 
 		internal static function completeTimeMarker(id:int):void
 		{
-			var marker:Array = _runTimeMarkers.splice( id, 1 )[0];
+			var marker:Array = _runTimeMarkers[id];
 			if (marker)
 			{
 				var markerDuration:int = getTimer( ) - marker[1];
 				var durationString:String = Otils.formatTime( markerDuration );
-				trace( marker[0] + " completed in " + durationString, Oplist.MARKER_COLOR_INDEX, marker[2] );
+				trace( marker[0] + " completed in " + durationString, Oplist.MARKER_COLOR_INDEX, marker[2], true, true );
 			}
 			else
 			{
-				trace( "Invalid time marker ID \"" + id + "\"", 3 );
+				trace( "Invalid time marker ID \"" + id + "\"", 3, "Olog" );
 			}
 		}
 
@@ -659,7 +662,7 @@ package no.olog
 			}
 			catch (e:Error)
 			{
-				trace( "Save operation requires FlashPlayer 10", 3 );
+				trace( "Save operation requires FlashPlayer 10", 3, "Olog" );
 			}
 		}
 
@@ -667,6 +670,11 @@ package no.olog
 		{
 			Oplist.keyBoardEnabled = val;
 			_evalKeyboard( );
+		}
+
+		internal static function getLastLineLevel():int 
+		{
+			return _lastLine.level;
 		}
 	}
 }

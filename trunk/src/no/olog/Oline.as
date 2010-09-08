@@ -15,7 +15,7 @@ package no.olog
 		internal var type:String;
 		internal var supportedType:String;
 		internal var useLineStart:Boolean;
-		internal var repeatCount:int = 0;
+		internal var repeatCount:int = 1;
 		internal var bypassValidation:Boolean;
 		internal var isTruncated:Boolean;
 		internal var truncationEnabled:Boolean;

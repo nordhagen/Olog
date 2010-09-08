@@ -7,17 +7,21 @@ package no.olog
 	internal class Oplist 
 	{
 		// Configurable
+		internal static var loggingEnabled:Boolean = true;
 		internal static var rememberWindowState:Boolean = true;
 		internal static var alwaysOnTop:Boolean = true;
-		internal static var checkForNewVersion:Boolean = true;
 		internal static var enableTimeStamp:Boolean = false;
 		internal static var enableLineNumbers:Boolean = true;
 		internal static var enableRunTime:Boolean = true;
-		internal static var enableVersionCheck:Boolean = true;
 		internal static var keyBoardEnabled:Boolean = true;
 		internal static var stackRepeatedMessages:Boolean = true;
 		internal static var maxUntruncatedLength:int = -1;
 		internal static var truncateMultiline:Boolean = false;
+		internal static var wrapLines:Boolean = true;
+		internal static var scrollOnNewLine:Boolean = true;
+		internal static var enableRegularTraceOutput:Boolean = false;
+		internal static var showMemoryUsage:Boolean = true;
+		internal static var memoryUsageLimitMB:uint = 70;
 		
 		// Defaults bounds
 		internal static const DEFAULT_WIDTH:int = 400;
@@ -29,7 +33,7 @@ package no.olog
 		
 		// Title bar
 		internal static const NAME:String = "Olog";
-		internal static const VERSION:String = "1.1.0";
+		internal static const VERSION:String = "1.2";
 		internal static const TB_FONT:String = "_sans";
 		internal static const TB_FONT_SIZE:uint = 11;
 		internal static const TB_COLORS:Array = [0x595959, 0x262626, 0x191919, 0x070707];
@@ -87,14 +91,18 @@ package no.olog
 		internal static const FONT:String = "_typewriter";
 		internal static const SIZE:uint = 10;
 		internal static const LEADING:int = 1;
-		//										   0-Trace	  1-Info	 2-Warning	3-Error	   4-Success  5-Event	 6-(Spare)	7-(Spare)  8-(Spare)  9-Marker
-		internal static const TEXT_COLORS:Array = ["#9AB28E", "#ffffff", "#ffcc00", "#FF7F7F", "#42d73b", "#4CDBFF", "#ffffff", "#ffffff", "#ffffff", "#00ffff"];
+		//										   0-Info	  1-Debug	 2-Warning	3-Error	   4-Success  5-Event	 6-(Spare)	7-(Spare)  8-(Spare)  9-Marker
+		internal static const LEVEL_STRINGS:Array = ["[info] ", "[debug] ", "[* warning] ", "[** error] ", "[success] ", "[event] ", "", "", "", "[marker] " ];
+		internal static const TEXT_COLORS_HEX:Array = ["#9AB28E", "#ffffff", "#ffcc00", "#FF7F7F", "#42d73b", "#4CDBFF", "#ffffff", "#ffffff", "#ffffff", "#00ffff"];
+		internal static const TEXT_COLORS_UINT:Array = [0x9AB28E, 0xffffff, 0xffcc00, 0xFF7F7F, 0x42d73b, 0x4CDBFF, 0xffffff, 0xffffff, 0xffffff, 0x00ffff];
 		internal static const TEXT_COLOR_LAST_INDEX:int = 5;
+		internal static const TEXT_COLOR_LAST_ERROR_INDEX:int = 3;
 		internal static const MARKER_COLOR_INDEX:int = 9;
 		internal static const TAB_STOPS:Array = [10, 250, 300, 400, 500, 600, 700];
 		
 		// Strings used in log window
 		internal static const ORIGIN_DELIMITER:String = " › ";
+		internal static const ORIGIN_DELIMITER_TXT:String = " ~ ";
 		internal static const LINE_START_DELIMITER:String = " ";
 		internal static const AFTER_LINE_START:String = " ";
 		internal static const EMPTY_MSG_STRING:String = "[empty message]";
@@ -108,6 +116,6 @@ package no.olog
 		internal static const OLOG_EVENT:String = "OlogEvent";
 		internal static const AI_LOGGER_EVENT:String = "AILoggerEvent";
 		internal static const SUPPORTED_TYPES:Array = ["String","Number","int","Array","XML","XMLList","Vector","XML","Sprite", 
-		"MovieClip","Event","ErrorEvent","Error",AI_LOGGER_EVENT];
+		"MovieClip","Event","ErrorEvent","Error",AI_LOGGER_EVENT ];
 	}
 }
