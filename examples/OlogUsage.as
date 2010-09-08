@@ -1,4 +1,4 @@
-package  
+package 
 {
 	import no.olog.Olog;
 
@@ -23,13 +23,15 @@ package
 			// Minimum required to display Olog
 			addChild( Olog.window );
 			
+			// Enables standard trace output in addition to log window 
+			Olog.enableRegularTraceOutput = true;
+			
 			// Display some output
 			Olog.trace( "Hello world" );
 			
 			// Output can be any type. Certain types are automatically color coded.
 			Olog.trace( new Error( "Ooops!" ) );
 			
-
 			/*
 			 * USAGE WHILE RUNNING
 			 * 
@@ -47,31 +49,56 @@ package
 			 * Title bar displays number of new log lines since window was minimized in a green field on the right.
 			 */
 
+			/*
+			 * CONTROL
+			 */
+			 
+			// Close the window from code
+			Olog.close( );
+			
+			// Open the window from code
+			Olog.open( );
+			
+			// Minimize to title bar Mac OS 9-style
+			Olog.minimize( );
+			
+			// Fit to stage
+			Olog.maximize( );
+			
+			// Set default bounds on stage
+			Olog.resize( /* x, y, width, height */ );
+			
+			// Performs checks the Olog website for a new version and displays the results in the window
+			Olog.checkForUpdates( );
+			
+			// Empty log window
+			Olog.clear( );
+			
 			
 			/*
 			 * CUSTOMIZING OUTPUT
 			 */
 			
 			// Dimmed output
-			Olog.trace( "An unimportant line", 0 );
+			Olog.trace( "An unimportant line" , 0 );
 
 			// Default output explicitly (white)
-			Olog.trace( "A reglar line", 1 );
+			Olog.trace( "A reglar line" , 1 );
 
 			// Yellow output (e.g. warning)
-			Olog.trace( "This might be a problem", 2 );
+			Olog.trace( "This might be a problem" , 2 );
 
 			// Red output (e.g. error)
-			Olog.trace( "This is bad", 3 );
+			Olog.trace( "This is bad" , 3 );
 
 			// Green output (e.g. success)
-			Olog.trace( "Well done!", 4 );
+			Olog.trace( "Well done!" , 4 );
 
 			// Blue output (e.g. notable event)
-			Olog.trace( "Mode change", 5 );
+			Olog.trace( "Mode change" , 5 );
 
 			// Output with origin, pass in a this reference
-			Olog.trace( "Hello world", 0, this );
+			Olog.trace( "Hello world" , 0 , this );
 			
 			// Display line numbers for each line
 			Olog.lineNumbers = true;
@@ -89,51 +116,18 @@ package
 			 */
 			
 			// Displays basic information about current runtime
-			Olog.traceRuntimeInfo();
+			Olog.traceRuntimeInfo( );
 			
 			// Creates a point-in-time start reference for an operation that you want to time the duration of
-			var testMarker:int = Olog.newTimeMarker("My test marker");
+			var testMarker:int = Olog.newTimeMarker( "My test marker" );
 			
 			// Completes the previously created marker and displays its name and duration
-			Olog.completeTimeMarker(testMarker);
+			Olog.completeTimeMarker( testMarker );
+			
+			// Prints all available information about an object
+			Olog.describe( root.loaderInfo );
 
-
 			
-			/*
-			 * CONTROL
-			 */
-			 
-			// Close the window from code
-			Olog.close( );
-			
-			// Open the window from code
-			Olog.open( );
-			
-			// Empty log window
-			Olog.clear();
-			
-			// Minimize to title bar Mac OS 9-style
-			Olog.minimize();
-			
-			// Fit to stage
-			Olog.maximize();
-			
-			// Set default bounds on stage
-			Olog.resize( /* x, y, width, height */ );
-			
-			// Performs checks the Olog website for a new version and displays the results in the window
-			Olog.checkForUpdates();
-			
-			/*
-			 * NOTE ON UPDATE CHECKING
-			 * 
-			 * Unless otherwise specified, the update check will occur automatically once a week.
-			 * The time of last check is stored in a Shared Object, hence the interval
-			 * is unique to each computer.
-			 */
-
-
-			 
 			/*
 			 * SETTINGS
 			 */
@@ -153,18 +147,14 @@ package
 			// Remember window position, size, open/closed state, minimized and maximized state
 			Olog.rememberWindowState = true;
 			
-			// Toggles automatic checking for new versions
-			Olog.updateCheckEnabled = true;
-
-
 
 			// Outputs mouse position with a random severity level for demonstration
-			stage.addEventListener( MouseEvent.CLICK, _onStageClick );
+			stage.addEventListener( MouseEvent.CLICK , _onStageClick );
 		}
 
 		private function _onStageClick(event:MouseEvent):void 
 		{
-			Olog.trace( "x:" + mouseX + " y:" + mouseY, Math.random( ) * 6 );
+			Olog.trace( "x:" + mouseX + " y:" + mouseY , Math.random( ) * 6 );
 		}
 	}
 }

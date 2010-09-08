@@ -1,0 +1,43 @@
+<version id="1.1.7">
+	<features>
+		<feature>Added shorthand function otrace()</feature>
+		<feature>Added utility function breakPoint() for logging virtual break points</feature>
+		<feature>Added utility function nullFunction for use in yet to be assigned callback situations</feature>
+		<feature>Added utility fucntion getCallee() for returning the string of a point in the call stack</feature>
+		<feature>Added utility function noMethodBodyWarning() for indicating an empty method and its position</feature>
+		<feature>Log messages from Olog itself now have a proper origin</feature>
+		<feature>More thorough introspection when using describe method. More properties found.</feature>
+		<feature>Added automatic regular trace output via property enableRegularTraceOutput</feature>
+		<feature>Added memory usage display in title bar</feature>	</features>
+		<feature>Update check is off by default</feature>
+		<feature>Describe robustness</feature>	<fixes>
+		<feature>More info when tracing runtime info</feature>
+		<feature>Added line wrapping preference</feature>
+	</features>
+	<fixes>
+		<fix>Resolved issue where prefs pane would stay open after minimizing</fix>
+		<fix>Resolved issue with filtering on log level</fix>
+		<fix>General stability fixes</fix>
+		<fix>More compressed log statements with IOErrorEvents</fix>
+		<fix>Resolved text coloring and object name bug with describe</fix>
+	</fixes>
+</version>
+	<version id="1.1.0">
+		<features>
+			<feature>Added truncation options for maxChars and multiline</feature>
+		</features>
+		<notes>Trucation is turned off by default. Use Olog.setTruncation(multilines true/false, maxChars)</notes>
+	</version>
+	<version id="1.0.0">
+		<features>
+			<feature>Brighter coloring for easier reading</feature>
+			<feature>More sensible handling of ErrorEvents</feature>
+		</features>
+		<fixes>
+			<fix>Window no longer empty after password prompt</fix>
+			<fix>cr() method now defaults to 1 empty line</fix>
+			<fix>Silent failing of update check</fix>
+		</fixes>
+	</version>
+	<version id="0.9b"></version>
+</versions>

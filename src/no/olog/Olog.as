@@ -25,7 +25,7 @@ package no.olog
 	 * <p>You can filter the log output by pressing the number keys equivalent to log levels 0 through 5.
 	 * Doing so will reveal only lines of that level/color. Press ESC to reset filtering.</p>
 	 * 
- 	 * <h3>Prefs pane</h3>
+	 * <h3>Prefs pane</h3>
 	 * <p>The circular button rightmost in the title bar will toggle the preferences pane. It contains
 	 * buttons for saving the log output as UTF-8 text or XML.</p>
 	 * 
@@ -41,11 +41,24 @@ package no.olog
 		 * Constructor. Do not use. Use addChild(Olog.window) instead.
 		 * @throws IllegalOperationError
 		 */
-		public function Olog():void
+		public function Olog ():void
 		{
 			throw new IllegalOperationError( "Use static methods" );
 		}
-		
+
+		/**
+		 * Sets a password for opening log window. An empty string effectively disables the password prompt.
+		 */
+		public static function set loggingEnabled (val:Boolean):void
+		{
+			Oplist.loggingEnabled = val;
+		}
+
+		public static function get loggingEnabled ():Boolean
+		{
+			return Oplist.loggingEnabled;
+		}
+
 		/**
 		 * Outputs content to log. The message argument can be anything from basic strings to
 		 * complext objects. Some objects types will be parsed further to display informal output
@@ -63,9 +76,9 @@ package no.olog
 		 * @param origin A String or object specifying where in the application the message originated
 		 * @return void
 		 */
-		public static function trace(message:*, level:uint = 1, origin:* = null):void
+		public static function trace (message:*, level:uint = 1, origin:* = null):void
 		{
-			Ocore.trace( message, level, origin );
+			if (Oplist.loggingEnabled) Ocore.trace( message , level , origin );
 		}
 
 		/**
@@ -75,9 +88,9 @@ package no.olog
 		 * @param origin A String or object specifying where in the application the message originated
 		 * @return void
 		 */
-		public static function describe(object:*, level:uint = 1, origin:* = null):void
+		public static function describe (object:*, level:uint = 1, origin:* = null):void
 		{
-			Ocore.describe( object, level, origin );
+			if (Oplist.loggingEnabled) Ocore.describe( object , level , origin );
 		}
 
 		/**
@@ -86,9 +99,9 @@ package no.olog
 		 * @param level Severity level @see Olog.trace for explaination the level argument
 		 * @return void
 		 */
-		public static function header(headerText:String, level:uint = 1):void
+		public static function header (headerText:String, level:uint = 1):void
 		{
-			Ocore.writeHeader( headerText, level );
+			if (Oplist.loggingEnabled) Ocore.writeHeader( headerText , level );
 		}
 
 		/**
@@ -96,31 +109,31 @@ package no.olog
 		 * @param numLines Number of empty lines to write 
 		 * @return void
 		 */
-		public static function cr(numLines:int = 1):void
+		public static function cr (numLines:int = 1):void
 		{
-			Ocore.writeNewline( numLines );
+			if (Oplist.loggingEnabled) Ocore.writeNewline( numLines );
 		}
 
 		/**
 		 * Outputs basic information about current runtime, such as Flash Player version, platform an size  
 		 * @return void
 		 */
-		public static function traceRuntimeInfo():void
+		public static function traceRuntimeInfo ():void
 		{
-			Ocore.traceRuntimeInfo( );
+			if (Oplist.loggingEnabled) Ocore.traceRuntimeInfo( );
 		}
-		
+
 		/**
 		 * Sets truncation options for log window.
 		 * @param truncateMultiline Boolean value; true truncates all multiline messages after first line, unless first line is longer than maxChars. false shows all.   
 		 * @param maxChars Integer specifying the maximum allowed character count before truncating. null or -1 disables max char truncation.   
 		 * @return void
 		 */
-		public static function setTruncation(truncateMultiline:Object = null, maxChars:Object = null):void
+		public static function setTruncation (truncateMultiline:Object = null, maxChars:Object = null):void
 		{
 			if (truncateMultiline is Boolean) Oplist.truncateMultiline = truncateMultiline as Boolean;
 			else Oplist.truncateMultiline = false;
-			if (maxChars is int) Oplist.maxUntruncatedLength = int(maxChars);
+			if (maxChars is int) Oplist.maxUntruncatedLength = int( maxChars );
 			else Oplist.maxUntruncatedLength = -1;
 		}
 
@@ -128,11 +141,11 @@ package no.olog
 		 * Checks the Olog website for a newer version. Outputs the results to the log window.  
 		 * @return void
 		 */
-		public static function checkForUpdates():void
+		public static function checkForUpdates ():void
 		{
-			Ocore.evalVersionCheck(true);
+			if (Oplist.loggingEnabled) Ocore.checkForUpdates( );
 		}
-		
+
 		/**
 		 * Creates a timing marker that you can later complete by calling completeTimeMarker() to 
 		 * output the time in between.
@@ -140,44 +153,45 @@ package no.olog
 		 * @return An integer ID to use as argument when calling completeTimeMarker(). 
 		 * @see completeTimeMarker()
 		 */
-		public static function newTimeMarker(name:String = null, origin:Object = null):int
+		public static function newTimeMarker (name:String = null, origin:Object = null):int
 		{
-			return Ocore.newTimeMarker( name, origin );
+			if (Oplist.loggingEnabled) return Ocore.newTimeMarker( name , origin );
+			else return -1;
 		}
-		
+
 		/**
 		 * Completes a previously created time marker and outputs the duration.
 		 * @param id integer id of time marker to complete
 		 * @return void
 		 */
-		public static function completeTimeMarker(id:int):void
+		public static function completeTimeMarker (id:int):void
 		{
-			Ocore.completeTimeMarker( id );
+			if (Oplist.loggingEnabled) Ocore.completeTimeMarker( id );
 		}
-		
+
 		/**
 		 * Returns the window instance to add to the display list
 		 * @return Owindow singleton instance
 		 */
-		public static function get window():Owindow
+		public static function get window ():Owindow
 		{
 			return Owindow.instance;
 		}
-		
+
 		/**
 		 * Empties the log contents
 		 * @return void
 		 */
-		public static function clear():void
+		public static function clear ():void
 		{
-			Owindow.clear( );
+			if (Oplist.loggingEnabled) Owindow.clear( );
 		}
 
 		/**
 		 * Opens log window, bypassing password validation
 		 * @return void
 		 */
-		public static function open():void
+		public static function open ():void
 		{
 			Owindow.open( );
 		}
@@ -186,7 +200,7 @@ package no.olog
 		 * Closes log window
 		 * @return void
 		 */
-		public static function close():void
+		public static function close ():void
 		{
 			Owindow.close( );
 		}
@@ -195,7 +209,7 @@ package no.olog
 		 * Maximizes log window
 		 * @return void
 		 */
-		public static function maximize():void
+		public static function maximize ():void
 		{
 			Owindow.maximize( );
 		}
@@ -204,22 +218,50 @@ package no.olog
 		 * Minimizes log window
 		 * @return void
 		 */
-		public static function minimize():void
+		public static function minimize ():void
 		{
 			Owindow.minimize( );
 		}
-		
+
 		/**
 		 * Sets a password for opening log window. An empty string effectively disables the password prompt.
 		 */
-		public static function set password(val:String):void
+		public static function set password (val:String):void
 		{
 			Ocore.setPassword( val );
 		}
 
-		public static function get password():String
+		public static function get password ():String
 		{
 			return Ocore.getPassword( );
+		}
+
+		/**
+		 * Toggles memory usage in title bar
+		 */
+		public static function set showMemoryUsage (val:Boolean):void
+		{
+			Oplist.showMemoryUsage = val;
+		}
+
+		public static function get showMemoryUsage ():Boolean
+		{
+			return Oplist.showMemoryUsage;
+		}
+
+		/**
+		 * Sets a limit for maximum allowed memory usage by your application. When memory exceeds
+		 * this amount, the memory display turns red.
+		 */
+		public static function set memoryUsageLimitMB (val:uint):void
+		{
+			Oplist.memoryUsageLimitMB = val;
+			Ocore.trace( "Memory usage limit is now " + val + " megabytes", 1, "Olog" );
+		}
+
+		public static function get memoryUsageLimitMB ():uint
+		{
+			return Oplist.memoryUsageLimitMB;
 		}
 
 		/**
@@ -227,51 +269,90 @@ package no.olog
 		 * NOTE: This change only applies to messages recieved after the call point. Previously stacked/repeated
 		 * messages will remain as-is after this setting is changed.
 		 */
-		public static function set stackRepeatedMessages(val:Boolean):void
+		public static function set stackRepeatedMessages (val:Boolean):void
 		{
 			Oplist.stackRepeatedMessages = val;
 		}
-		
-		public static function get stackRepeatedMessages():Boolean
+
+		public static function get stackRepeatedMessages ():Boolean
 		{
 			return Oplist.stackRepeatedMessages;
 		}
-		
+
+		/**
+		 * Toggles scrolling to bottom each time a new line is written
+		 */
+		public static function set scrollOnNewLine (val:Boolean):void
+		{
+			Oplist.scrollOnNewLine = val;
+		}
+
+		public static function get scrollOnNewLine ():Boolean
+		{
+			return Oplist.scrollOnNewLine;
+		}
+
+		/**
+		 * Toggles wrapped lines in the log window
+		 */
+		public static function set wrapLines (val:Boolean):void
+		{
+			Owindow.setLineWrapping( val );
+		}
+
+		public static function get wrapLines ():Boolean
+		{
+			return Oplist.wrapLines;
+		}
+
 		/**
 		 * Toggles keybard control over opening, closing, scrolling and filtering
 		 */
-		public static function set keyboardEnabled(val:Boolean):void
+		public static function set keyboardEnabled (val:Boolean):void
 		{
 			Ocore.setKeyboardEnabled( val );
 		}
-		
-		public static function get keyboardEnabled():Boolean
+
+		public static function get keyboardEnabled ():Boolean
 		{
 			return Oplist.keyBoardEnabled;
 		}
-		
+
 		/**
-		 * Toggles The context menu item for opening/closing window on or off
+		 * Toggles the context menu item for opening/closing window on or off
 		 */
-		public static function set contextMenuItem(val:Boolean):void
+		public static function set contextMenuItem (val:Boolean):void
 		{
 			Ocore.setCMI( val );
 		}
 
-		public static function get contextMenuItem():Boolean
+		public static function get contextMenuItem ():Boolean
 		{
 			return Ocore.hasCMI;
 		}
 
 		/**
+		 * Toggles sending of log messages to the regular output window
+		 */
+		public static function set enableRegularTraceOutput (val:Boolean):void
+		{
+			Oplist.enableRegularTraceOutput = val;
+		}
+
+		public static function get enableRegularTraceOutput ():Boolean
+		{
+			return Oplist.enableRegularTraceOutput;
+		}
+
+		/**
 		 * Toggles persistent window state between application launches by means of SharedObject
 		 */
-		public static function set rememberWindowState(val:Boolean):void
+		public static function set rememberWindowState (val:Boolean):void
 		{
 			Oplist.rememberWindowState = val;
 		}
 
-		public static function get rememberWindowState():Boolean
+		public static function get rememberWindowState ():Boolean
 		{
 			return Oplist.rememberWindowState;
 		}
@@ -279,31 +360,21 @@ package no.olog
 		/**
 		 * Toggles the automatic weekly update check on/off
 		 */
-		public static function set updateCheckEnabled(val:Boolean):void
-		{
-			Oplist.enableVersionCheck = val;
-			if (val) Ocore.evalVersionCheck( );
-		}
 
-		public static function get updateCheckEnabled():Boolean
-		{
-			return Oplist.checkForNewVersion;
-		}
-		
 		/**
 		 * Toggles always on top
 		 */
-		public static function set alwaysOnTop(val:Boolean):void
+		public static function set alwaysOnTop (val:Boolean):void
 		{
 			Oplist.alwaysOnTop = val;
 			Ocore.evalAlwaysOnTop( );
 		}
 
-		public static function get alwaysOnTop():Boolean
+		public static function get alwaysOnTop ():Boolean
 		{
 			return Oplist.alwaysOnTop;
 		}
-		
+
 		/**
 		 * Sets the default bounds of the log window
 		 * @param x X position
@@ -312,25 +383,25 @@ package no.olog
 		 * @param h Height
 		 * @return void
 		 */
-		public static function resize(x:int = 0, y:int = 0, width:int = 0, height:int = 0):void
+		public static function resize (x:int = 0, y:int = 0, width:int = 0, height:int = 0):void
 		{
 			Oplist.x = x;
 			Oplist.y = y;
 			Oplist.width = width;
 			Oplist.height = height;
-			Owindow.resizeToDefault();
+			Owindow.resizeToDefault( );
 		}
-		
+
 		/**
 		 * Toggles clock time for each line on/off
 		 */
-		public static function set timeStamp(val:Boolean):void
+		public static function set timeStamp (val:Boolean):void
 		{
 			Oplist.enableTimeStamp = val;
 			Ocore.refreshLog( );
 		}
 
-		public static function get timeStamp():Boolean
+		public static function get timeStamp ():Boolean
 		{
 			return Oplist.enableTimeStamp;
 		}
@@ -338,13 +409,13 @@ package no.olog
 		/**
 		 * Toggles time since launch for each line on/off
 		 */
-		public static function set runTime(val:Boolean):void
+		public static function set runTime (val:Boolean):void
 		{
 			Oplist.enableRunTime = val;
 			Ocore.refreshLog( );
 		}
 
-		public static function get runTime():Boolean
+		public static function get runTime ():Boolean
 		{
 			return Oplist.enableRunTime;
 		}
@@ -352,13 +423,13 @@ package no.olog
 		/**
 		 * Toggles line number for each line on/off
 		 */
-		public static function set lineNumbers(val:Boolean):void
+		public static function set lineNumbers (val:Boolean):void
 		{
 			Oplist.enableLineNumbers = val;
 			Ocore.refreshLog( );
 		}
 
-		public static function get lineNumbers():Boolean
+		public static function get lineNumbers ():Boolean
 		{
 			return Oplist.enableLineNumbers;
 		}

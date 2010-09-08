@@ -13,7 +13,7 @@ package no.olog
 		/**
 		 * Equivalent to calling Olog.trace()
 		 */
-		public static const TRACE:String = "oout";
+		public static const TRACE:String = "trace";
 
 		/**
 		 * Equivalent to calling Olog.header()
