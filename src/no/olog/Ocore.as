@@ -107,14 +107,13 @@ package no.olog
 		
 		internal static function trace(message:Object, level:uint = 1, origin:Object = null, useLineStart:Boolean = true, bypassValidation:Boolean = false):void 
 		{
-			var c:String = Otils.getClassName( message );
-			
-			if (c == Oplist.AI_LOGGER_EVENT || c == Oplist.OLOG_EVENT)
+			if (message is OlogEvent)
 			{
-				_handleLogEvent( message, c );
+				_handleLogEvent( message as OlogEvent );
 			}
 			else
 			{
+				var c:String;
 				var m:String;
 				var s:String;
 				var l:int;
@@ -158,25 +157,23 @@ package no.olog
 			if (Owindow.exists) Owindow.replaceLastLine( _getLogTextFromVO( _lastLine ) );
 		}
 
-		private static function _handleLogEvent(e:Object, type:String):void 
+		private static function _handleLogEvent(e:OlogEvent):void 
 		{
-			var level:int = (type == Oplist.OLOG_EVENT) ? e.level : e.severity;
-			
 			switch (e.type)
 			{
 				case OlogEvent.TRACE:
 				case "log":
-					trace( e.message, level, e.target );
+					trace( e.message , e.level , e.origin || e.target );
 					break;
 				
 				case OlogEvent.DESCRIBE:
 				case "describe":
-					describe( e.message, level, e.target );
+					describe( e.message, e.level, e.origin || e.target );
 					break;
 				
 				case OlogEvent.HEADER:
 				case "header":
-					writeHeader( e.message, level );
+					writeHeader( e.message as String, e.level );
 					break;
 				
 				case OlogEvent.NEWLINE:
@@ -185,7 +182,7 @@ package no.olog
 					break;
 				
 				default:
-					trace( new Error( "Invalid event type for " + type + ":" + e.type ), 3, "Olog" );
+					trace( new Error( "Invalid event type for OlogEvent:" + e.type ), 3, "Olog" );
 					return;
 			}
 		}
