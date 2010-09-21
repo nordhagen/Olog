@@ -15,7 +15,8 @@ package no.olog.utilfunctions
 	 * <li>4: Green, typically indicates success of some sort </li>
 	 * <li>5: Blue, for notable events and default when message argument is of type Event</li>
 	 * </ul>
-	 * @param origin A String or object specifying where in the application the message originated
+	 * @param origin A String or object specifying where in the application the message originated. Note: This parameter
+	 * should be passed as a String if Olog is to be included in the release build for optimum performance.
 	 * @return void
 	 */
 	public function otrace ( message:* , level:uint = 1 , origin:* = null ):void
