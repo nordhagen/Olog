@@ -5,8 +5,8 @@ package no.olog.utilfunctions
 	/**
 	 * Sends a warning to the log window indicating a method without a body and its location.
 	 */
-	public function noMethodBodyWarning () : void
+	public function noMethodBodyWarning ( viewStackDepth:uint = 3 ) : void
 	{
-		Olog.trace( "Methond has no body" , 3 , getCallee( 3 ) );
+		Olog.trace( "Methond has no body" , 3 , getCallee( viewStackDepth ) );
 	}
 }

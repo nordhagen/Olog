@@ -14,7 +14,14 @@ package no.olog.utilfunctions
 		var num:int = args.length;
 		for (var i:int = 0; i < num; i++)
 		{
-			Olog.describe( args[i] , 1 );
+			if (typeof(args[i]) == "string" || "int" || "number")
+			{
+				Olog.trace( args[i] );
+			}
+			else
+			{
+				Olog.describe( args[i] , 1 );
+			}
 		}
 	}
 }
