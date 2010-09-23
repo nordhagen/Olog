@@ -1,4 +1,12 @@
 <versions>
+	<version id="1.2.2">
+		<features>
+			<feature>Added backwards compatible support for global error handling</feature>
+		</features>
+		<fixes>
+			<fix>Corrected formatting issue with traceDisplayList</fix>
+		</fixes>
+	</version>
 	<version id="1.2.1">
 		<features>
 			<feature>Added key binding utility. Allows for calling functions by typing a predefined character sequence.</feature>

@@ -11,27 +11,31 @@ package no.olog
 	{
 		private static const TAB:String = " . ";
 
-		internal static function getTree ( root:DisplayObjectContainer , numIterations:uint = 0, maxDepth:uint = 10 ):String
+		internal static function getTree ( root:DisplayObjectContainer , numIterations:uint = 0 , maxDepth:uint = 10 , property:String = null ):String
 		{
-			var tabs:String = "", tree:String = "", child:DisplayObject, numChildren:int = root.numChildren;
+			var tabs:String = "", tree:String = "", child:DisplayObject, numChildren:int = root.numChildren, propertyValue:String;
 
-			for (var j:int = numIterations; j > 0; --j)
+			for (var j:int = numIterations; j > -1; --j)
 			{
 				tabs += TAB;
 			}
 
-			tree += "\n" + tabs + root.toString().match(/(?<=\s)\w+/)[0];
+			propertyValue = (property && root.hasOwnProperty( property )) ? "." + property + " = " + root[property] : "";
+			tree += "\n" + tabs + root.toString().match( /(?<=\s)\w+/ )[0] + propertyValue;
+			
+			tabs += TAB;
 
 			for (var i:int = 0; i < numChildren ; ++i)
 			{
 				child = root.getChildAt( i );
 				if (child is DisplayObjectContainer && numIterations < maxDepth - 1)
 				{
-					tree += getTree( child as DisplayObjectContainer , ++numIterations , maxDepth );
+					tree += getTree( child as DisplayObjectContainer , numIterations + 1 , maxDepth , property );
 				}
 				else
 				{
-					tree += "\n" + tabs + child.toString().match(/(?<=\s)\w+/)[0];
+					propertyValue = (property && child.hasOwnProperty( property )) ? "." + property + " = " + child[property] : "";
+					tree += "\n" + tabs + child.toString().match( /(?<=\s)\w+/ )[0] + propertyValue;
 				}
 			}
 
