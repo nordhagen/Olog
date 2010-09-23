@@ -59,6 +59,10 @@ package no.olog
 					result = classNameSupported + " (type:" + className + ", name:" + message.name + ", frames:" + message.totalFrames + ")";
 					break;
 				
+				case "UncaughtErrorEvent":
+				result = "[UNCAUHGT] " + parseMsgType(message.error);
+				break;
+				
 				case "ErrorEvent":
 					result = "";
 					var urlPos:int = message.text.indexOf( "URL:" );
@@ -96,7 +100,7 @@ package no.olog
 
 		private static function _styleEventType (type:String):String 
 		{
-			return type.replace( /[A-Z]/g , "_$&" ).toUpperCase( );
+			return type.replace( /[A-Z]/ , "_$&" ).toUpperCase( );
 		}
 
 		private static function _parseProperties (message:Object, includeType:Boolean = false):String 

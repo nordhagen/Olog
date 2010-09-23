@@ -143,20 +143,20 @@ package no.olog
 
 		/**
 		 * Outputs the contents of the display list from the specified root object down to the specified maxDepth
-		 * @param root Starting point of the display list
+		 * @param root Starting point of the display list. Default: stage
 		 * @param maxDepth Maximum depth of the traverse operation. Default: 10. <b>WARNING!</b> a high maxDepth
 		 * will inevitably cause a script timeout or a stack overflow with large display lists.  
 		 */
-		public static function traceDisplayList ( root:DisplayObjectContainer = null, maxDepth:uint = 10 ):void
+		public static function traceDisplayList ( root:DisplayObjectContainer = null , maxDepth:uint = 10 , property:String = null ):void
 		{
 			root = (root) ? root : Owindow.instance.stage;
 			if (root)
 			{
-				Ocore.trace( ODisplayListCrawler.getTree( root, 0, maxDepth ) );
+				Ocore.trace( "DISPLAY LIST:\n" + ODisplayListCrawler.getTree( root , 0 , maxDepth , property ) + "\n" );
 			}
 			else
 			{
-				throw new IllegalOperationError("Unreachable root for Olog.traceDisplayList");
+				throw new IllegalOperationError( "Unreachable root for Olog.traceDisplayList" );
 			}
 		}
 

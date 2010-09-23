@@ -1,8 +1,5 @@
 package no.olog
 {
-	import flash.utils.clearTimeout;
-	import flash.utils.setTimeout;
-	import flash.utils.Dictionary;
 	import flash.display.DisplayObjectContainer;
 	import flash.display.InteractiveObject;
 	import flash.display.Stage;
@@ -18,7 +15,10 @@ package no.olog
 	import flash.system.Capabilities;
 	import flash.text.StyleSheet;
 	import flash.ui.Keyboard;
+	import flash.utils.Dictionary;
+	import flash.utils.clearTimeout;
 	import flash.utils.getTimer;
+	import flash.utils.setTimeout;
 
 	/**
 	 * @author Oyvind Nordhagen
@@ -90,6 +90,10 @@ package no.olog
 			Owindow.exists = true;
 			_stage = e.target.stage;
 			_stage.addChild( Owindow.instance );
+			if (_stage.loaderInfo.hasOwnProperty( "uncaughtErrorEvents" ))
+			{
+				_stage.loaderInfo["uncaughtErrorEvents"].addEventListener( "uncaughtError" , trace );
+			}
 			_evalKeyboard();
 			_evalCMI();
 			_initPWPrompt();
@@ -123,7 +127,7 @@ package no.olog
 		{
 			var c:String = Otils.getClassName( message );
 
-			if (c == Oplist.AI_LOGGER_EVENT || c == Oplist.OLOG_EVENT)
+			if (c == Oplist.OLOG_EVENT)
 			{
 				_handleLogEvent( message , c );
 			}
@@ -616,10 +620,10 @@ package no.olog
 		private static function _getTruncated ( msg:String , index:int ):String
 		{
 			if (Oplist.truncateMultiline)
-				msg = msg.substr( 0 , msg.indexOf( "\n" ) );
+				msg = msg.substr( 0 , msg.indexOf( "\n" ) ) + " [+] ";
 			if (Oplist.maxUntruncatedLength > -1)
-				msg = msg.substr( 0 , Oplist.maxUntruncatedLength - 3 );
-			return msg + "... " + "<a href=\"event:" + Oplist.EVENT_OPEN_TRUNCATED + "@" + index + "\">" + Oplist.OPEN_TRUNCATED_LABEL + "</a>";
+				msg = msg.substr( 0 , Oplist.maxUntruncatedLength - 3 ) + "... ";
+			return msg + "<a href=\"event:" + Oplist.EVENT_OPEN_TRUNCATED + "@" + index + "\">" + Oplist.OPEN_TRUNCATED_LABEL + "</a>";
 		}
 
 		private static function _getUntruncated ( msg:String , index:int ):String
