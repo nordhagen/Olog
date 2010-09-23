@@ -1,4 +1,9 @@
 <versions>
+	<version id="1.2.3">
+		<fixes>
+			<fix>Fixed an issue causing context menu to disappear when Olog.window was added directly to stage</fix>
+		</fixes>
+	</version>
 	<version id="1.2.2">
 		<features>
 			<feature>Added backwards compatible support for global error handling</feature>
