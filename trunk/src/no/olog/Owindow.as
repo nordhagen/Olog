@@ -1,5 +1,6 @@
 ﻿package no.olog
 {
+	import flash.display.DisplayObjectContainer;
 	import flash.display.Stage;
 	import flash.display.GradientType;
 	import flash.display.Graphics;
@@ -87,15 +88,19 @@
 			var bSize:Number = Oplist.TB_HEIGHT * 0.45;
 			// PREFS BUTTON - NB NOT INSIDE BUTTON WRAPPER
 			_prefsButton = _getTitleBarButton();
-			_prefsButton.graphics.beginFill( Oplist.BTN_LINE_COLOR , 1 );
-			_prefsButton.graphics.drawCircle( 0 , 0 , bSize * 0.2 );
-			_prefsButton.graphics.endFill();
+			
+			var g:Graphics = _prefsButton.graphics;
+			g.beginFill( Oplist.BTN_LINE_COLOR , 1 );
+			g.drawCircle( 0 , 0 , bSize * 0.2 );
+			g.endFill();
+			
 			_addTitleBarButtonMouseOver( _prefsButton );
 			_prefsButton.addEventListener( MouseEvent.CLICK , _onPrefsClick );
 			_prefsButton.x = Oplist.DEFAULT_WIDTH - bSize * 0.5 - Oplist.PADDING;
 			_prefsButton.y = _titleBarBg.height * 0.5 - 1;
 			_prefsButton.alpha = Oplist.BTN_UP_ALPHA;
 			addChild( _prefsButton );
+			
 			_prefPane = new OprefPane();
 			_prefPane.y = _field.y + _field.height - _prefPane.height;
 			_prefPane.visible = false;
@@ -188,12 +193,25 @@
 
 		internal static function createCMI ():void
 		{
-			if (_cmi || Ocore.originalParent is Stage)
+			if (_cmi )
+			{
 				return;
+			}
+			
+			var target:DisplayObjectContainer;
+			if (Ocore.originalParent is Stage)
+			{
+				target = Ocore.originalParent.getChildAt(0) as DisplayObjectContainer;
+			}
+			else
+			{
+				target = _i.parent;
+			}
+			
 			_cmi = new ContextMenuItem( Oplist.CMI_OPEN_LABEL );
 			_cmi.addEventListener( ContextMenuEvent.MENU_ITEM_SELECT , Ocore.evalOpenClose );
-			_i.parent.contextMenu = new ContextMenu();
-			_i.parent.contextMenu.customItems.push( _cmi );
+			target.contextMenu = new ContextMenu();
+			target.contextMenu.customItems.push( _cmi );
 		}
 
 		internal static function removeCMI ():void
@@ -297,34 +315,42 @@
 			addChild( _titleBarField );
 			_titlebarButtonWrapper = new Sprite();
 			var bSize:Number = Oplist.TB_HEIGHT * 0.45;
+			
+			var g:Graphics; 
+			
 			// CLOSE BUTTON
 			_closeBtn = _getTitleBarButton();
-			_closeBtn.graphics.lineStyle( 2 , 0xffffff );
-			_closeBtn.graphics.moveTo( bSize * -0.15 , bSize * -0.15 );
-			_closeBtn.graphics.lineTo( bSize * 0.15 , bSize * 0.15 );
-			_closeBtn.graphics.moveTo( bSize * 0.15 , bSize * -0.15 );
-			_closeBtn.graphics.lineTo( bSize * -0.15 , bSize * 0.15 );
+			g = Owindow._closeBtn.graphics;
+			g.lineStyle( 2 , 0xffffff );
+			g.moveTo( bSize * -0.15 , bSize * -0.15 );
+			g.lineTo( bSize * 0.15 , bSize * 0.15 );
+			g.moveTo( bSize * 0.15 , bSize * -0.15 );
+			g.lineTo( bSize * -0.15 , bSize * 0.15 );
 			_addTitleBarButtonMouseOver( _closeBtn );
 			_closeBtn.addEventListener( MouseEvent.CLICK , close );
 			_closeBtn.alpha = Oplist.BTN_UP_ALPHA;
 			_titlebarButtonWrapper.addChild( _closeBtn );
+			
 			// MAXIMIZE BUTTON
 			_maximizeBtn = _getTitleBarButton();
-			_maximizeBtn.graphics.lineStyle( 2 , 0xffffff );
-			_maximizeBtn.graphics.moveTo( bSize * -0.2 , 0 );
-			_maximizeBtn.graphics.lineTo( bSize * 0.2 , 0 );
-			_maximizeBtn.graphics.moveTo( 0 , bSize * -0.2 );
-			_maximizeBtn.graphics.lineTo( 0 , bSize * 0.2 );
+			g = _maximizeBtn.graphics;
+			g.lineStyle( 2 , 0xffffff );
+			g.moveTo( bSize * -0.2 , 0 );
+			g.lineTo( bSize * 0.2 , 0 );
+			g.moveTo( 0 , bSize * -0.2 );
+			g.lineTo( 0 , bSize * 0.2 );
 			_addTitleBarButtonMouseOver( _maximizeBtn );
 			_maximizeBtn.addEventListener( MouseEvent.CLICK , _onMaximizeClick );
 			_maximizeBtn.alpha = Oplist.BTN_UP_ALPHA;
 			_maximizeBtn.x = _closeBtn.x + _closeBtn.width + Oplist.PADDING * 0.5;
 			_titlebarButtonWrapper.addChild( _maximizeBtn );
+			
 			// MINIMIZE BUTTON
 			_minimizeBtn = _getTitleBarButton();
-			_minimizeBtn.graphics.lineStyle( 2 , 0xffffff );
-			_minimizeBtn.graphics.moveTo( bSize * -0.2 , 0 );
-			_minimizeBtn.graphics.lineTo( bSize * 0.2 , 0 );
+			g = _minimizeBtn.graphics;
+			g.lineStyle( 2 , 0xffffff );
+			g.moveTo( bSize * -0.2 , 0 );
+			g.lineTo( bSize * 0.2 , 0 );
 			_addTitleBarButtonMouseOver( _minimizeBtn );
 			_minimizeBtn.addEventListener( MouseEvent.CLICK , _onMinimizeClick );
 			_minimizeBtn.alpha = Oplist.BTN_UP_ALPHA;
@@ -339,10 +365,11 @@
 		{
 			var r:Number = Oplist.TB_HEIGHT * 0.225;
 			var b:Sprite = new Sprite();
-			b.graphics.lineStyle( 1 , Oplist.BTN_LINE_COLOR );
-			b.graphics.beginFill( Oplist.BTN_FILL_COLOR , 1 );
-			b.graphics.drawCircle( 0 , 0 , r );
-			b.graphics.endFill();
+			var g:Graphics = b.graphics;
+			g.lineStyle( 1 , Oplist.BTN_LINE_COLOR );
+			g.beginFill( Oplist.BTN_FILL_COLOR , 1 );
+			g.drawCircle( 0 , 0 , r );
+			g.endFill();
 			return b;
 		}
 
@@ -493,17 +520,18 @@
 		private function _initDragger ():void
 		{
 			_dragger = new Sprite();
-			_dragger.graphics.lineStyle( 1 , 0xffffff , 0.5 );
-			_dragger.graphics.moveTo( 10 , 0 );
-			_dragger.graphics.lineTo( 0 , 10 );
-			_dragger.graphics.moveTo( 10 , 4 );
-			_dragger.graphics.lineTo( 4 , 10 );
-			_dragger.graphics.moveTo( 10 , 8 );
-			_dragger.graphics.lineTo( 8 , 10 );
-			_dragger.graphics.lineStyle( 0 , 0 , 0 );
-			_dragger.graphics.beginFill( 0 , 0 );
-			_dragger.graphics.drawRect( 0 , 0 , 12 , 12 );
-			_dragger.graphics.endFill();
+			var g:Graphics = _dragger.graphics;
+			g.lineStyle( 1 , 0xffffff , 0.5 );
+			g.moveTo( 10 , 0 );
+			g.lineTo( 0 , 10 );
+			g.moveTo( 10 , 4 );
+			g.lineTo( 4 , 10 );
+			g.moveTo( 10 , 8 );
+			g.lineTo( 8 , 10 );
+			g.lineStyle( 0 , 0 , 0 );
+			g.beginFill( 0 , 0 );
+			g.drawRect( 0 , 0 , 12 , 12 );
+			g.endFill();
 			_dragger.x = Oplist.DEFAULT_WIDTH - _dragger.width;
 			_dragger.y = Oplist.DEFAULT_HEIGHT - _dragger.height;
 			_dragger.addEventListener( MouseEvent.MOUSE_DOWN , _onDraggerDown );
@@ -575,18 +603,20 @@
 			var h:int = Oplist.TB_HEIGHT;
 			var matrix:Matrix = new Matrix();
 			matrix.createGradientBox( w , h , (Math.PI / 180) * 90 );
-			_titleBarBg.graphics.clear();
-			_titleBarBg.graphics.beginGradientFill( GradientType.LINEAR , Oplist.TB_COLORS , Oplist.TB_ALPHAS , Oplist.TB_RATIOS , matrix );
-			_titleBarBg.graphics.drawRoundRectComplex( 0 , 0 , w , h , Oplist.CORNER_RADIUS , Oplist.CORNER_RADIUS , 0 , 0 );
-			_titleBarBg.graphics.endFill();
+			var g:Graphics = _titleBarBg.graphics;
+			g.clear();
+			g.beginGradientFill( GradientType.LINEAR , Oplist.TB_COLORS , Oplist.TB_ALPHAS , Oplist.TB_RATIOS , matrix );
+			g.drawRoundRectComplex( 0 , 0 , w , h , Oplist.CORNER_RADIUS , Oplist.CORNER_RADIUS , 0 , 0 );
+			g.endFill();
 		}
 
 		private function _initBg ():void
 		{
 			_bg = new Shape();
-			_bg.graphics.beginFill( Oplist.BG_COL , Oplist.BG_ALPHA );
-			_bg.graphics.drawRect( 0 , 0 , Oplist.DEFAULT_WIDTH , Oplist.DEFAULT_HEIGHT - Oplist.TB_HEIGHT );
-			_bg.graphics.endFill();
+			var g:Graphics = _bg.graphics;
+			g.beginFill( Oplist.BG_COL , Oplist.BG_ALPHA );
+			g.drawRect( 0 , 0 , Oplist.DEFAULT_WIDTH , Oplist.DEFAULT_HEIGHT - Oplist.TB_HEIGHT );
+			g.endFill();
 			_bg.y = Oplist.TB_HEIGHT;
 			addChild( _bg );
 		}

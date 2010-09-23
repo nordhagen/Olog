@@ -1,6 +1,7 @@
 package no.olog 
 {
 	import flash.display.GradientType;
+	import flash.display.Graphics;
 	import flash.display.Shape;
 	import flash.display.Sprite;
 	import flash.events.Event;
@@ -32,9 +33,10 @@ package no.olog
 			matrix.createGradientBox( w, h, (Math.PI / 180) * 90 );
 			
 			var bg:Shape = new Shape( );
-			bg.graphics.beginGradientFill( GradientType.LINEAR, Oplist.TB_COLORS, Oplist.TB_ALPHAS, Oplist.TB_RATIOS, matrix );
-			bg.graphics.drawRoundRect( 0, 0, w, h, r, r );
-			bg.graphics.endFill( );
+			var g:Graphics = bg.graphics;
+			g.beginGradientFill( GradientType.LINEAR, Oplist.TB_COLORS, Oplist.TB_ALPHAS, Oplist.TB_RATIOS, matrix );
+			g.drawRoundRect( 0, 0, w, h, r, r );
+			g.endFill( );
 			addChild( bg );
 			
 			var label:TextField = new TextField();
