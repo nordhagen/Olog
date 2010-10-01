@@ -21,8 +21,7 @@ package no.olog
 			}
 
 			propertyValue = (property && root.hasOwnProperty( property )) ? "." + property + " = " + root[property] : "";
-			tree += "\n" + tabs + root.toString().match( /(?<=\s)\w+/ )[0] + propertyValue;
-			
+			tree += "\n" + tabs + root.toString().match( /(?<=\s|\.)\w+(?=\]|$)/ )[0] + propertyValue;
 			tabs += TAB;
 
 			for (var i:int = 0; i < numChildren ; ++i)
@@ -35,7 +34,7 @@ package no.olog
 				else
 				{
 					propertyValue = (property && child.hasOwnProperty( property )) ? "." + property + " = " + child[property] : "";
-					tree += "\n" + tabs + child.toString().match( /(?<=\s)\w+/ )[0] + propertyValue;
+					tree += "\n" + tabs + child.toString().match( /(?<=\s|\.)\w+(?=\]|$)/ )[0] + propertyValue;
 				}
 			}
 
