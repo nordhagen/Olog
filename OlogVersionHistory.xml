@@ -1,4 +1,9 @@
 <versions>
+	<version id="1.2.4">
+		<fixes>
+			<fix>Fixed a regex match bug with traceDisplayList</fix>
+		</fixes>
+	</version>
 	<version id="1.2.3">
 		<fixes>
 			<fix>Fixed an issue causing context menu to disappear when Olog.window was added directly to stage</fix>
