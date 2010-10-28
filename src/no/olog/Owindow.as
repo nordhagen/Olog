@@ -208,17 +208,20 @@
 				target = _i.parent;
 			}
 			
-			_cmi = new ContextMenuItem( Oplist.CMI_OPEN_LABEL );
-			_cmi.addEventListener( ContextMenuEvent.MENU_ITEM_SELECT , Ocore.evalOpenClose );
-			target.contextMenu = new ContextMenu();
-			target.contextMenu.customItems.push( _cmi );
+			if (target.contextMenu && target.contextMenu.hasOwnProperty("customItems"))
+			{
+				_cmi = new ContextMenuItem( Oplist.CMI_OPEN_LABEL );
+				_cmi.addEventListener( ContextMenuEvent.MENU_ITEM_SELECT , Ocore.evalOpenClose );
+				target.contextMenu = new ContextMenu();
+				target.contextMenu["customItems"].push( _cmi );
+			}
 		}
 
 		internal static function removeCMI ():void
 		{
 			if (!_cmi)
 				return;
-			var cmis:Array = _i.stage.contextMenu.customItems;
+			var cmis:Array = _i.stage.contextMenu["customItems"];
 			var num:int = cmis.length;
 			for (var i:int = 0; i < num; i++)
 			{

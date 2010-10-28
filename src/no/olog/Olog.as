@@ -79,10 +79,10 @@ package no.olog
 		 * should be passed as a String if Olog is to be included in the release build for optimum performance.
 		 * @return void
 		 */
-		public static function trace ( message:* , level:uint = 1 , origin:* = null ):void
+		public static function trace ( message:*, level:uint = 1, origin:* = null ):void
 		{
 			if (Oplist.loggingEnabled)
-				Ocore.trace( message , level , origin );
+				Ocore.trace( message, level, origin );
 		}
 
 		/**
@@ -92,10 +92,10 @@ package no.olog
 		 * @param origin A String or object specifying where in the application the message originated
 		 * @return void
 		 */
-		public static function describe ( object:* , level:uint = 1 , origin:* = null ):void
+		public static function describe ( object:*, level:uint = 1, origin:* = null ):void
 		{
 			if (Oplist.loggingEnabled)
-				Ocore.describe( object , level , origin );
+				Ocore.describe( object, level, origin );
 		}
 
 		/**
@@ -104,10 +104,10 @@ package no.olog
 		 * @param level Severity level @see Olog.trace for explaination the level argument
 		 * @return void
 		 */
-		public static function header ( headerText:String , level:uint = 1 ):void
+		public static function header ( headerText:String, level:uint = 1 ):void
 		{
 			if (Oplist.loggingEnabled)
-				Ocore.writeHeader( headerText , level );
+				Ocore.writeHeader( headerText, level );
 		}
 
 		/**
@@ -136,9 +136,9 @@ package no.olog
 		 * @param keySequence The characters that need to be typed in order for the callback to be invoked
 		 * @param callback Reference to a function that this character sequence is linked to  
 		 */
-		public static function addKeyBinding ( keySequence:String , callback:Function ):void
+		public static function addKeyBinding ( keySequence:String, callback:Function ):void
 		{
-			Ocore.addKeyBinding( keySequence , callback );
+			Ocore.addKeyBinding( keySequence, callback );
 		}
 
 		/**
@@ -147,12 +147,12 @@ package no.olog
 		 * @param maxDepth Maximum depth of the traverse operation. Default: 10. <b>WARNING!</b> a high maxDepth
 		 * will inevitably cause a script timeout or a stack overflow with large display lists.  
 		 */
-		public static function traceDisplayList ( root:DisplayObjectContainer = null , maxDepth:uint = 10 , property:String = null ):void
+		public static function traceDisplayList ( root:DisplayObjectContainer = null, maxDepth:uint = 10, property:String = null ):void
 		{
 			root = (root) ? root : Owindow.instance.stage;
 			if (root)
 			{
-				Ocore.trace( "DISPLAY LIST:\n" + ODisplayListCrawler.getTree( root , 0 , maxDepth , property ) + "\n" );
+				Ocore.trace( "DISPLAY LIST:\n" + ODisplayListCrawler.getTree( root, 0, maxDepth, property ) + "\n" );
 			}
 			else
 			{
@@ -166,7 +166,7 @@ package no.olog
 		 * @param maxChars Integer specifying the maximum allowed character count before truncating. null or -1 disables max char truncation.   
 		 * @return void
 		 */
-		public static function setTruncation ( truncateMultiline:Object = null , maxChars:Object = null ):void
+		public static function setTruncation ( truncateMultiline:Object = null, maxChars:Object = null ):void
 		{
 			if (truncateMultiline is Boolean)
 				Oplist.truncateMultiline = truncateMultiline as Boolean;
@@ -195,10 +195,10 @@ package no.olog
 		 * @return An integer ID to use as argument when calling completeTimeMarker(). 
 		 * @see completeTimeMarker()
 		 */
-		public static function newTimeMarker ( name:String = null , origin:Object = null ):int
+		public static function newTimeMarker ( name:String = null, origin:Object = null ):int
 		{
 			if (Oplist.loggingEnabled)
-				return Ocore.newTimeMarker( name , origin );
+				return Ocore.newTimeMarker( name, origin );
 			else
 				return -1;
 		}
@@ -308,7 +308,7 @@ package no.olog
 		public static function set memoryUsageLimitMB ( val:uint ):void
 		{
 			Oplist.memoryUsageLimitMB = val;
-			Ocore.trace( "Memory usage limit is now " + val + " megabytes" , 1 , "Olog" );
+			Ocore.trace( "Memory usage limit is now " + val + " megabytes", 1, "Olog" );
 		}
 
 		/**
@@ -464,7 +464,7 @@ package no.olog
 		 * @param h Height
 		 * @return void
 		 */
-		public static function resize ( x:int = 0 , y:int = 0 , width:int = 0 , height:int = 0 ):void
+		public static function resize ( x:int = 0, y:int = 0, width:int = 0, height:int = 0 ):void
 		{
 			Oplist.x = x;
 			Oplist.y = y;
@@ -522,6 +522,49 @@ package no.olog
 		public static function get lineNumbers ():Boolean
 		{
 			return Oplist.enableLineNumbers;
+		}
+
+		/**
+		 * Toggles whether color strings (e.g. 0xff0000) detected in messages
+		 * are displayed with the color value they describe.
+		 */
+		public static function set colorizeColorStrings ( val:Boolean ):void
+		{
+			Oplist.colorizeColorStrings = val;
+			Ocore.refreshLog();
+		}
+
+		/**
+		 * Toggles whether color strings (e.g. 0xff0000) detected in messages
+		 * are displayed with the color value they describe.
+		 */
+		public static function get colorizeColorStrings ():Boolean
+		{
+			return Oplist.colorizeColorStrings;
+		}
+
+		/**
+		 * Toggles whether to parse the type of each item in an array/vector
+		 * separately or use the toString value. Default: false.
+		 * CAUTION: Setting this value to true will reduce performance
+		 * or even crash the Flash Player with large arrays. Especially
+		 * with multi dimentional arrays as it works recursively.
+		 */
+		public static function set expandArrayItems( val:Boolean ):void
+		{
+			Oplist.expandArrayItems = val;
+		}
+
+		/**
+		 * Toggles whether to parse the type of each item in an array/vector
+		 * separately or use the toString value. Default: false.
+		 * CAUTION: Setting this value to true will reduce performance
+		 * or even crash the Flash Player with large arrays. Especially
+		 * with multi dimentional arrays as it works recursively.
+		 */
+		public static function get expandArrayItems ():Boolean
+		{
+			return Oplist.expandArrayItems;
 		}
 	}
 }
