@@ -471,7 +471,7 @@ package no.olog
 			var lStart:String = (oline.useLineStart) ? getLineStart( oline.index, oline.timestamp, oline.runtime ) : "";
 			var levelString:String = Oplist.LEVEL_STRINGS[oline.level];
 			var repeatCount:String = (oline.repeatCount == 1) ? "" : " (" + oline.repeatCount + ")";
-			var msg:String = oline.msg.replace( /<\/?.+?>/gi, "" ).replace( /\t/, " " );
+			var msg:String = oline.msg.replace( /<\/?.+?>/gi, "" ).replace( /\t/g, " " );
 			trace( lStart + levelString + msg + repeatCount + Oplist.ORIGIN_DELIMITER_TXT + oline.origin );
 		}
 
