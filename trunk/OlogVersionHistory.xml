@@ -1,4 +1,11 @@
 <versions>
+	<version id="1.2.5">
+		<features>
+			<feature>traceDisplayList now supports argument-less functions as the property argument</feature>
+			<feature>Option expandArrayItems (toggle, default: false) to enable parsing of array items individually instead of toString value</feature>
+			<feature>Option colorizeColorStrings (toggle, default: true) to make Olog display detected color strings (e.g. 0xff0000) in the color they describe</feature>
+		</features>
+	</version>
 	<version id="1.2.4">
 		<fixes>
 			<fix>Fixed a regex match bug with traceDisplayList</fix>
