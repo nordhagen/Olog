@@ -6,13 +6,24 @@ package no.olog.utilfunctions
 	 * @author Oyvind Nordhagen
 	 * @date 13. sep. 2010
 	 */
-	public function traceCallStack () : void
+	public function traceCallStack ( origin:* = null ) : void
 	{
-		var lineExp:RegExp = new RegExp( "(?<=\tat ).+\(\)" , "gs" );
-		var replExp:RegExp = new RegExp( "::|\$?\/" , "g" );
-		
-		var stackLines:String = new Error().getStackTrace().match( lineExp ).join( "\n" );
-		var output:String = "Call stack:\n" + stackLines;//.replace( replExp , "." );
-		Olog.trace( new Error().getStackTrace().match( lineExp ) , 1 );
+		var stackLines:Array = new Error().getStackTrace().split( "\n" );
+		var output:String = "Call stack for " + stackLines[2].match( /\w+\(\)/ )[0];
+		var stackLine:String;
+		var classAndFunction:String;
+		var lineNumberMatches:Array;
+		var lineNumber:String;
+		var num:int = stackLines.length;
+		for (var i:int = 2; i < num; i++)
+		{
+			stackLine = stackLines[i];
+			classAndFunction = stackLine.match( /(?<=::)\w+?(::|\/)?\w+?\(\)/ )[0];
+			lineNumberMatches = stackLine.match( /(?<=:)\d+/ );
+			lineNumber = (lineNumberMatches) ? ", line " + lineNumberMatches[0] : "";
+			output += "\n\t\t\t\t\t\t" + classAndFunction.replace( "/", "." ) + lineNumber;
+		}
+
+		Olog.trace( output, 1, origin );
 	}
 }
