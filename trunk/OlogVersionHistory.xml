@@ -1,4 +1,11 @@
 <versions>
+	<version id="1.2.6">
+		<features>
+			<feature>traceDisplayList now displays child index for each child</feature>
+			<feature>traceDisplayList now supports display object containers that are not on stage, in which case child index is displayed as "X".</feature>
+			<feature>traceDisplayList now runs backwards to display children in the correct stacking order in the log window</feature>
+		</features>
+	</version>
 	<version id="1.2.5">
 		<features>
 			<feature>traceDisplayList now supports argument-less functions as the property argument</feature>
