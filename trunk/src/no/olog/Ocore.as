@@ -9,6 +9,7 @@ package no.olog
 	import flash.events.MouseEvent;
 	import flash.events.SecurityErrorEvent;
 	import flash.events.TextEvent;
+	import flash.external.ExternalInterface;
 	import flash.net.FileReference;
 	import flash.net.URLLoader;
 	import flash.net.URLRequest;
@@ -169,6 +170,34 @@ package no.olog
 				line.truncationEnabled = line.isTruncated;
 				_lines[i] = line;
 				_evalAddOrRepeat( line );
+				_evalAdditionalLogMethods( line );
+			}
+		}
+
+		private static function _evalAdditionalLogMethods ( line:Oline ) : void
+		{
+			if (Oplist.enableRegularTraceOutput)
+				Otils.regularTrace( line );
+
+			if (Oplist.enableJavascriptConsole)
+				_writeToJSConsole( line );
+
+			if (Oplist.dispatchOlogOutEvents)
+				_dispatchOline( line );
+		}
+
+		private static function _writeToJSConsole ( line:Oline ) : void
+		{
+			switch (line.level)
+			{
+				case 2:
+					ExternalInterface.call( "console.warn", line.msg );
+					break;
+				case 3:
+					ExternalInterface.call( "console.error", line.msg );
+					break;
+				default:
+					ExternalInterface.call( "console.log", line.msg );
 			}
 		}
 
@@ -178,14 +207,11 @@ package no.olog
 				_addLine( line );
 			else
 				_incrementLastLineRepeat();
-			if (Oplist.enableRegularTraceOutput)
-				Otils.regularTrace( line );
 		}
 
 		private static function _incrementLastLineRepeat ():void
 		{
-			_lastLine.repeatCount++
-			;
+			_lastLine.repeatCount++;
 			if (Owindow.exists)
 				Owindow.replaceLastLine( _getLogTextFromVO( _lastLine ) );
 		}
@@ -222,35 +248,35 @@ package no.olog
 		{
 			var header:String = "RUNTIME INFORMATION\n";
 			var type:String = (Capabilities.isDebugger) ? "Debugger" : "Standard";
-			var msg:String = "Platform:\t" + Capabilities.os + "\n";
-			msg += "Language:\t" + Capabilities.language.toUpperCase() + "\n";
-			msg += "HW Manufactorer:\t" + Capabilities.manufacturer + "\n";
-			msg += "Player:\t" + Capabilities.version + " (" + Capabilities.playerType + ", " + type + ")\n";
-			msg += "Screen:\t" + Capabilities.screenResolutionX + "x" + Capabilities.screenResolutionY + " @ " + Capabilities.screenDPI + " dpi\n";
+			var msg:String = "Platform: " + Capabilities.os + "\n";
+			msg += "Language: " + Capabilities.language.toUpperCase() + "\n";
+			msg += "HW Manufactorer: " + Capabilities.manufacturer + "\n";
+			msg += "Player: " + Capabilities.version + " (" + Capabilities.playerType + ", " + type + ")\n";
+			msg += "Screen: " + Capabilities.screenResolutionX + "x" + Capabilities.screenResolutionY + " @ " + Capabilities.screenDPI + " dpi\n";
 			if (Owindow.exists)
-				msg += "Stage:\t" + _stage.stageWidth + "x" + _stage.stageHeight + "\n" ;
-			msg += "Accessibility aids:\t" + Capabilities.hasAccessibility + "\n";
-			msg += "AV Hardware Disabled:\t" + Capabilities.avHardwareDisable + "\n";
-			msg += "Audio:\t" + Capabilities.hasAudio + "\n";
-			msg += "Audio Encoder:\t" + Capabilities.hasAudioEncoder + "\n";
-			msg += "MP3 Decoder:\t" + Capabilities.hasMP3 + "\n";
-			msg += "Video Encoder:\t" + Capabilities.hasVideoEncoder + "\n";
-			msg += "Embedded Video:\t" + Capabilities.hasEmbeddedVideo + "\n";
-			msg += "Screen Broadcast:\t" + Capabilities.hasScreenBroadcast + "\n";
-			msg += "Screen Playback:\t" + Capabilities.hasScreenPlayback + "\n";
-			msg += "Streaming Audio:\t" + Capabilities.hasStreamingAudio + "\n";
-			msg += "Streaming Video:\t" + Capabilities.hasStreamingVideo + "\n";
-			msg += "Native SSL Sockets:\t" + Capabilities.hasTLS + "\n";
-			msg += "Input Method editor:\t" + Capabilities.hasIME + "\n";
-			msg += "Local File Read Access:\t" + Capabilities.localFileReadDisable + "\n";
-			msg += "Printing:\t" + Capabilities.hasPrinting + "\n";
+				msg += "Stage: " + _stage.stageWidth + "x" + _stage.stageHeight + "\n" ;
+			msg += "Accessibility aids: " + Capabilities.hasAccessibility + "\n";
+			msg += "AV Hardware Disabled: " + Capabilities.avHardwareDisable + "\n";
+			msg += "Audio: " + Capabilities.hasAudio + "\n";
+			msg += "Audio Encoder: " + Capabilities.hasAudioEncoder + "\n";
+			msg += "MP3 Decoder: " + Capabilities.hasMP3 + "\n";
+			msg += "Video Encoder: " + Capabilities.hasVideoEncoder + "\n";
+			msg += "Embedded Video: " + Capabilities.hasEmbeddedVideo + "\n";
+			msg += "Screen Broadcast: " + Capabilities.hasScreenBroadcast + "\n";
+			msg += "Screen Playback: " + Capabilities.hasScreenPlayback + "\n";
+			msg += "Streaming Audio: " + Capabilities.hasStreamingAudio + "\n";
+			msg += "Streaming Video: " + Capabilities.hasStreamingVideo + "\n";
+			msg += "Native SSL Sockets: " + Capabilities.hasTLS + "\n";
+			msg += "Input Method editor: " + Capabilities.hasIME + "\n";
+			msg += "Local File Read Access: " + Capabilities.localFileReadDisable + "\n";
+			msg += "Printing: " + Capabilities.hasPrinting + "\n";
 
 			trace( header + msg, 0, null, false );
 		}
 
-		internal static function describe ( message:Object, level:int, origin:Object ):void
+		internal static function describe ( message:Object, level:int = 1, origin:Object = null, limitProperties:Array = null ):void
 		{
-			var m:String = Otils.getDescriptionOf( message );
+			var m:String = Otils.getDescriptionOf( message, limitProperties );
 			trace( m, level, origin, true, true );
 		}
 
@@ -272,7 +298,8 @@ package no.olog
 		{
 			_lastLine = line;
 			_filter( line );
-			if (Owindow.isOpen)
+
+			if (Owindow.exists && Owindow.isOpen)
 				_writeLine( line );
 			else
 				_numLinesPendingWrite++;
@@ -597,10 +624,14 @@ package no.olog
 
 		private static function _writeLine ( oline:Oline ):void
 		{
-			if (Owindow.exists)
-			{
-				Owindow.write( _getLogTextFromVO( oline ) );
-			}
+			Owindow.write( _getLogTextFromVO( oline ) );
+		}
+
+		private static function _dispatchOline ( oline:Oline ) : void
+		{
+			var e:OlogEvent = new OlogEvent( OlogEvent.OLOG_OUT, oline.msg, oline.level, oline.origin );
+			e.oline = oline;
+			Owindow.instance.dispatchEvent( e );
 		}
 
 		private static function _getLogTextFromVO ( oline:Oline ):String
@@ -628,7 +659,7 @@ package no.olog
 			{
 				return "<font color=\"#" + arguments[0].substr( 2 ) + "\">" + arguments[0] + "</font>";
 			}
-			
+
 			return rawText.replace( /0x[0-9abcdef]{6}/gi, wrapColor );
 		}
 
@@ -757,7 +788,7 @@ package no.olog
 			return _lastLine.level;
 		}
 
-		public static function addKeyBinding ( keySequence:String, callback:Function ) : void
+		internal static function addKeyBinding ( keySequence:String, callback:Function ) : void
 		{
 			if (!_keyBindings)
 			{
@@ -765,6 +796,14 @@ package no.olog
 			}
 
 			_keyBindings[keySequence] = callback;
+		}
+
+		internal static function forceExpandedArrayTrace ( args:Array, level:int = 1 ) : void
+		{
+			var valBefore:Boolean = Oplist.expandArrayItems;
+			Oplist.expandArrayItems = true;
+			Ocore.trace( args, level );
+			Oplist.expandArrayItems = valBefore;
 		}
 	}
 }

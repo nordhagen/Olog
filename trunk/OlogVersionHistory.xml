@@ -1,4 +1,10 @@
 <versions>
+	<version id="1.2.7">
+		<features>
+			<feature>Olog can now be enabled to dispatch the event OlogEvent.OLOG_OUT with each message written to the log. This event contains the full parsed Oline vo for external use.</feature>
+			<feature>Olog can now be enabled send log messages to the JS console with console.log, console.warn and console.error depending on the severity og the message.</feature>
+		</features>
+	</version>
 	<version id="1.2.6">
 		<features>
 			<feature>traceDisplayList now displays child index for each child</feature>

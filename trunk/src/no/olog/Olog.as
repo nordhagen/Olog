@@ -1,5 +1,7 @@
 package no.olog
 {
+	import flash.external.ExternalInterface;
+	import no.olog.utilfunctions.getCallee;
 	import flash.display.DisplayObjectContainer;
 	import flash.display.Sprite;
 	import flash.errors.IllegalOperationError;
@@ -37,6 +39,7 @@ package no.olog
 	 * @author Oyvind Nordhagen
 	 * @date 19. feb. 2010
 	 */
+	[Event(name="ologOut", type="no.olog.OlogEvent")]
 	public class Olog extends Sprite
 	{
 		/**
@@ -152,7 +155,9 @@ package no.olog
 			root = (root) ? root : Owindow.instance.stage;
 			if (root)
 			{
-				Ocore.trace( "DISPLAY LIST:\n" + ODisplayListCrawler.getTree( root, 0, maxDepth, property ) + "\n" );
+				var msg:String = "DISPLAY LIST:\n" + ODisplayListCrawler.getTree( root, 0, maxDepth, property ) + "\n";
+				var footer:String = "--------------------------\n" + ODisplayListCrawler.numInstances + " instances total\n\n";
+				Ocore.trace( msg + footer );
 			}
 			else
 			{
@@ -421,6 +426,25 @@ package no.olog
 		}
 
 		/**
+		 * Toggles sending of log messages to the javascript console/Firebug
+		 */
+		public static function set enableJavascriptConsole ( val:Boolean ):void
+		{
+			if (ExternalInterface.available)
+				Oplist.enableJavascriptConsole = val;
+			else
+				trace( "ExternalInterface unavailable. JavaScript console logging disabled", 2, "Olog" );
+		}
+
+		/**
+		 * Toggles sending of log messages to the javascript console/Firebug
+		 */
+		public static function get enableJavascriptConsole ():Boolean
+		{
+			return Oplist.enableJavascriptConsole;
+		}
+
+		/**
 		 * Toggles persistent window state between application launches by means of SharedObject
 		 */
 		public static function set rememberWindowState ( val:Boolean ):void
@@ -550,7 +574,7 @@ package no.olog
 		 * or even crash the Flash Player with large arrays. Especially
 		 * with multi dimentional arrays as it works recursively.
 		 */
-		public static function set expandArrayItems( val:Boolean ):void
+		public static function set expandArrayItems ( val:Boolean ):void
 		{
 			Oplist.expandArrayItems = val;
 		}
@@ -565,6 +589,57 @@ package no.olog
 		public static function get expandArrayItems ():Boolean
 		{
 			return Oplist.expandArrayItems;
+		}
+
+		public static function addEventListener ( type:String, listener:Function, useCapture:Boolean = false, priority:int = 0, useWeakReference:Boolean = false ):void
+		{
+			Oplist.dispatchOlogOutEvents = true;
+			Owindow.instance.addEventListener( type, listener, useCapture, priority, useWeakReference );
+		}
+
+		public static function removeEventListener ( type:String, listener:Function ):void
+		{
+			Owindow.instance.removeEventListener( type, listener );
+			if (!Owindow.instance.hasEventListener( OlogEvent.OLOG_OUT ))
+			{
+				Oplist.dispatchOlogOutEvents = false;
+			}
+		}
+
+		/**
+		 * Sets a virtual break point. Code execution is not halted, but the class,
+		 * function name and line number of the call to breakPoint is written to the log window
+		 * along with introspection of any argument passed to it.
+		 * @param args Values to inspect at break point. There are two ways to use this argument:
+		 * 				<ol>
+		 * 					<li>Use it just like a standard trace and pass any properties you want
+		 * 					the values of to be displayed after the breakpoint</li>
+		 * 					<li>Pass an object reference as the first argument and string property
+		 * 					names after that. These property names will be concidered public
+		 * 					properties of the object in the first argument and traced.</li>
+		 * 					<li>Pass an object reference as the first argument and "*" as the second
+		 * 					argument to invoke a full discription of the object passed as the first argument</li> 
+		 * 				</ol>
+		 */
+		public static function breakPoint ( ...args ):void
+		{
+			Ocore.trace( "Breakpoint reached: " + getCallee( 3 ), Oplist.MARKER_COLOR_INDEX );
+
+			if (args && args.length > 0)
+			{
+				if (args[0] is Object && args[1] === "*")
+				{
+					Ocore.describe( args[0], Oplist.MARKER_COLOR_INDEX );
+				}
+				else if (args[0] is Object && args[1] is String)
+				{
+					Ocore.describe( args[0], Oplist.MARKER_COLOR_INDEX, null, args.slice( 1 ) );
+				}
+				else
+				{
+					Ocore.forceExpandedArrayTrace( args, Oplist.MARKER_COLOR_INDEX );
+				}
+			}
 		}
 	}
 }

@@ -27,7 +27,6 @@ package no.olog
 			var className:String = getClassName( message );
 			var classNameSupported:String = getClassName( message, true );
 			var result:String;
-			trace( classNameSupported );
 			switch (classNameSupported)
 			{
 				case "String":
@@ -356,11 +355,59 @@ package no.olog
 			return uint( "0x" + String( Oplist.TEXT_COLORS_HEX[level] ).substr( 1 ) );
 		}
 
-		internal static function getDescriptionOf ( o:Object ):String
+//		internal static function getBreakPoint ( args:Array ):String
+//		{
+//			var msg:String = "Breakpoint reached: " + getCallee( 3 );
+//
+//			if (args && args.length > 0)
+//			{
+//				var num:int = args.length, i:int, tabs:String = Oplist.LINE_START_TABS, obj:Object, objName:String, propertyName:String;
+//				if (args[0] is Object && args[1] === "*")
+//				{
+//					msg += getDescriptionOf( args[0] );
+//				}
+//				else if (args[0] is Object && args[1] is String)
+//				{
+//					objName = getQualifiedClassName( obj );
+//					obj = args[0];
+//					for (i = 1; i < num; i++)
+//					{
+//						propertyName = String( args[i] );
+//						if (obj.hasOwnProperty( propertyName ))
+//						{
+//							msg += "\n" + tabs + propertyName + ": " + obj[propertyName];
+//						}
+//						else
+//						{
+//							msg += "\n" + tabs + "[" + propertyName + " not a public property of " + objName + "]";
+//						}
+//					}
+//				}
+//				else
+//				{
+//					for (i = 0; i < num; i++)
+//					{
+//						if (typeof(args[i]) == "string" || "int" || "number" || "boolean")
+//						{
+//							msg += "\n" + tabs + args[i];
+//						}
+//						else
+//						{
+//							msg += "\n" + tabs + "[arg " + i + " not a primitive]";
+//						}
+//					}
+//				}
+//			}
+//
+//			return msg;
+//		}
+
+		internal static function getDescriptionOf ( o:Object, limitProperties:Array = null ):String
 		{
-			trace( describeType( o ) );
-			var separator:String = "\n\t" + Ocore.colorTextLevel( "-", 0 );
-			var result:String = "\n\n";
+			var newLine:String = "\n" + Oplist.LINE_START_TABS;
+			var separator:String = newLine + Ocore.colorTextLevel( "-", 0 );
+			var result:String = "";
+			
 			var d:XML = describeType( o );
 			var type:String = getClassName( o );
 			var propsArr:Array = new Array();
@@ -379,7 +426,9 @@ package no.olog
 			{
 				objectName = "";
 			}
-			result += Ocore.colorTextLevel( "\tDescription of " + type + objectName, 1 );
+			
+			result += Ocore.colorTextLevel( "Description of " + type + objectName, 1 );
+			
 			if (propsArr.length > 0)
 				result += Ocore.colorTextLevel( " (" + propsArr.join( ", " ) + ")", 0 );
 
@@ -393,29 +442,32 @@ package no.olog
 					heritage += "-";
 			}
 
-			result += Ocore.colorTextLevel( "\n\tInheritance tree: " + heritage, 0 );
+			result += newLine + Ocore.colorTextLevel( "Inheritance tree: " + heritage, 0 );
 
 			var parsedVars:Dictionary = new Dictionary( true );
 
 			var varList:XMLList = d.variable;
 			var variables:String = "";
 			var numVars:int = varList.length();
+			var varName:String;
 			for (var curVar:int = 0; curVar < numVars; curVar++)
 			{
 				var v:XML = varList[curVar];
-				// variables += "\n\tvar " + v.@name + Ocore.formatText( ":" + extractClassNameFromPackage( v.@type ), 0 ) + "\t= " + o[v.@name];
-				parsedVars[v.@name] = { name:v.@name, type:v.@type };
+				varName = v.@name;
+				if (!limitProperties || limitProperties.indexOf( varName ) != -1)
+				{
+					parsedVars[v.@name] = { name:v.@name, type:v.@type };
+				}
 			}
 
 			for (var p:String in o)
 			{
-				// if (variables.indexOf( p ) != -1) continue;
-				if (parsedVars[p])
-					continue;
-				var className:String = getQualifiedClassName( o[p] );
-				// variables += "\n\tvar " + p + Ocore.formatText( ":" + extractClassNameFromPackage( className ), 0 ) + "\t= " + o[p];
-				parsedVars[p] = { name:p, type:className };
-				numVars++;
+				if (!parsedVars[p] || (!limitProperties && limitProperties.indexOf( varName ) != -1))
+				{
+					var className:String = getQualifiedClassName( o[p] );
+					parsedVars[p] = { name:p, type:className };
+					numVars++;
+				}
 			}
 
 			for each (var item:Object in parsedVars)
@@ -429,7 +481,7 @@ package no.olog
 				{
 					instanceName = "";
 				}
-				variables += "\n\tvar " + item.name + Ocore.colorTextLevel( ":" + extractClassNameFromPackage( item.type ), 0 ) + "\t= " + o[item.name] + instanceName;
+				variables += newLine + "var " + item.name + Ocore.colorTextLevel( ":" + extractClassNameFromPackage( item.type ), 0 ) + "\t= " + o[item.name] + instanceName;
 			}
 
 			if (numVars > 0)
@@ -446,8 +498,8 @@ package no.olog
 
 			if (numConst > 0)
 				result += separator + "\n\t" + Ocore.colorTextLevel( constants, 1 );
-			result += "\n\t" + Ocore.colorTextLevel( "-", 0 );
-			result += "\n\t" + Ocore.colorTextLevel( (numVars + numConst) + " values found", 1 ) + "\n";
+				
+			result += separator + Ocore.colorTextLevel( (numVars + numConst) + " values found", 1 ) + "\n";
 			return result;
 		}
 
