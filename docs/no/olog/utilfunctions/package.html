@@ -21,7 +21,16 @@
 	 Sets a virtual break point. Code execution is not halted, but the class,
 	 function name and line number of the call to breakPoint is written to the log window
 	 along with introspection of any argument passed to it.
-	 </p><p><span class="label"> Parameters </span><table cellpadding="0" cellspacing="0" border="0"><tr><td width="20px"></td><td><code>... <span class="label">args</span></code> &mdash; Values to inspect at break point.
+	 </p><p><span class="label"> Parameters </span><table cellpadding="0" cellspacing="0" border="0"><tr><td width="20px"></td><td><code>... <span class="label">args</span></code> &mdash; Values to inspect at break point. There are two ways to use this argument:
+	 				<ol>
+	 					<li>Use it just like a standard trace and pass any properties you want
+	 					the values of to be displayed after the breakpoint</li>
+	 					<li>Pass an object reference as the first argument and string property
+	 					names after that. These property names will be concidered public
+	 					properties of the object in the first argument and traced.</li>
+	 					<li>Pass an object reference as the first argument and " as the second
+	 					argument to invoke a full discription of the object passed as the first argument</li> 
+	 				</ol>
 	 </td></tr></table></p></div><a name="getCallee()"></a><a name="getCallee(int)"></a><table class="detailHeader" cellpadding="0" cellspacing="0"><tr><td class="detailHeaderName">getCallee</td><td class="detailHeaderParens">()</td><td class="detailHeaderType">function</td><td class="detailHeaderRule">&nbsp;</td></tr></table><div class="detailBody"><code> public function getCallee(calltStackIndex:int = 2):String</code><p></p><p></p><p>
 	 Returns a prettified string representation of the selected call stack index
 	 in the form MyClass.myFunction(), line [lineNumber].
@@ -50,4 +59,4 @@
 	 </td></tr><tr><td class="paramSpacer">&nbsp;</td></tr><tr><td width="20px"></td><td><code><span class="label">origin</span>:*</code> (default = <code>null</code>)<code></code> &mdash; A String or object specifying where in the application the message originated. Note: This parameter
 	 should be passed as a String if Olog is to be included in the release build for optimum performance.
 	 </td></tr></table></p></div><a name="traceCallStack()"></a><a name="traceCallStack(any)"></a><table class="detailHeader" cellpadding="0" cellspacing="0"><tr><td class="detailHeaderName">traceCallStack</td><td class="detailHeaderParens">()</td><td class="detailHeaderType">function</td><td class="detailHeaderRule">&nbsp;</td></tr></table><div class="detailBody"><code> public function traceCallStack(origin:* = null):void</code><p></p><p></p><p>
-	 </p><p><span class="label"> Parameters </span><table cellpadding="0" cellspacing="0" border="0"><tr><td width="20px"></td><td><code><span class="label">origin</span>:*</code> (default = <code>null</code>)<code></code></td></tr></table></p></div><p></p><center class="copyright"><footer>Olog Documentation</footer><br/>Wed Nov 3 2010, 11:29 AM +01:00  </center></div></body></html>
+	 </p><p><span class="label"> Parameters </span><table cellpadding="0" cellspacing="0" border="0"><tr><td width="20px"></td><td><code><span class="label">origin</span>:*</code> (default = <code>null</code>)<code></code></td></tr></table></p></div><p></p><center class="copyright"><footer>Olog Documentation</footer><br/>Thu Dec 2 2010, 12:24 PM +01:00  </center></div></body></html>
