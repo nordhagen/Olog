@@ -10,10 +10,16 @@ package no.olog
 	internal class ODisplayListCrawler
 	{
 		private static const TAB:String = " . ";
+		private static var _numInstances:uint;
 
 		internal static function getTree ( root:DisplayObjectContainer, currentDepth:uint = 0, maxDepth:uint = 10, property:String = null, rootsChildIndex:int = -1 ):String
 		{
 			var tabs:String = "", tree:String = "", child:DisplayObject, numChildren:int = root.numChildren;
+
+			if (currentDepth == 0)
+			{
+				_numInstances = 1;
+			}
 
 			for (var j:int = currentDepth; j > 0; --j)
 			{
@@ -42,6 +48,7 @@ package no.olog
 
 			for (var i:int = numChildren - 1; i > -1 ; --i)
 			{
+				_numInstances++;
 				child = root.getChildAt( i );
 				if (child is DisplayObjectContainer && currentDepth < maxDepth - 1)
 				{
@@ -91,6 +98,11 @@ package no.olog
 				}
 			}
 			return result;
+		}
+
+		static public function get numInstances () : uint
+		{
+			return _numInstances;
 		}
 	}
 }

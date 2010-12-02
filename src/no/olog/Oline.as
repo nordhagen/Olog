@@ -4,21 +4,21 @@ package no.olog
 	 * @author Oyvind Nordhagen
 	 * @date 22. feb. 2010
 	 */
-	internal class Oline 
+	public class Oline 
 	{
-		internal var msg:String;
-		internal var level:uint;
-		internal var origin:String;
-		internal var timestamp:String;
-		internal var runtime:String;
-		internal var index:int;
-		internal var type:String;
-		internal var supportedType:String;
-		internal var useLineStart:Boolean;
-		internal var repeatCount:int = 1;
-		internal var bypassValidation:Boolean;
-		internal var isTruncated:Boolean;
-		internal var truncationEnabled:Boolean;
+		public var msg:String;
+		public var level:uint;
+		public var origin:String;
+		public var timestamp:String;
+		public var runtime:String;
+		public var index:int;
+		public var type:String;
+		public var supportedType:String;
+		public var useLineStart:Boolean;
+		public var repeatCount:int = 1;
+		public var bypassValidation:Boolean;
+		public var isTruncated:Boolean;
+		public var truncationEnabled:Boolean;
 
 		public function Oline(msg:String, level:uint, origin:String, timestamp:String, runtime:String,
 		index:int, type:String, supportedType:String, useLineStart:Boolean = true, bypassValidation:Boolean = false):void
