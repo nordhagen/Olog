@@ -623,7 +623,7 @@ package no.olog
 		 */
 		public static function breakPoint ( ...args ):void
 		{
-			Ocore.trace( "Breakpoint reached: " + getCallee( 3 ), Oplist.MARKER_COLOR_INDEX );
+			Ocore.trace( "Breakpoint reached: " + getCallee( 5 ), Oplist.MARKER_COLOR_INDEX );
 
 			if (args && args.length > 0)
 			{
