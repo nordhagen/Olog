@@ -1,4 +1,8 @@
 <versions>
+	<version id="1.2.8">
+			<feature>Added simple assert() function</feature>
+			<feature>getCallee will now insert "constructor" instead of repeating the class name</feature>
+	</version>
 	<version id="1.2.7">
 		<features>
 			<feature>Olog can now be enabled to dispatch the event OlogEvent.OLOG_OUT with each message written to the log. This event contains the full parsed Oline vo for external use.</feature>

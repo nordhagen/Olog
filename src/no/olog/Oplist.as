@@ -37,7 +37,7 @@ package no.olog
 		
 		// Title bar
 		internal static const NAME:String = "Olog";
-		internal static const VERSION:String = "1.2.7";
+		internal static const VERSION:String = "1.2.8";
 		internal static const TB_FONT:String = "_sans";
 		internal static const TB_FONT_SIZE:uint = 11;
 		internal static const TB_COLORS:Array = [0x595959, 0x262626, 0x191919, 0x070707];

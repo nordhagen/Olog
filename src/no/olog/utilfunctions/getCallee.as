@@ -28,7 +28,9 @@ package no.olog.utilfunctions
 			className = "";
 			lineNumber = "";
 		}
-		
+
+		if (className.substr( 0, -1 ) == functionName.substr( 0, -2))
+			functionName = "constructor()";
 		
 		return className + functionName + lineNumber;
 	}
