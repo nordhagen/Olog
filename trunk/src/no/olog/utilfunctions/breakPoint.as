@@ -17,8 +17,8 @@ package no.olog.utilfunctions
 	 * 					argument to invoke a full discription of the object passed as the first argument</li> 
 	 * 				</ol>
 	 */
-	public function breakPoint ( ...args ) : void
+	public function breakPoint ( ... args ) : void
 	{
-		Olog.breakPoint.apply( args );
+		Olog.breakPoint.apply( this, args );
 	}
 }

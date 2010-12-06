@@ -1,7 +1,14 @@
 <versions>
 	<version id="1.2.8">
+		<features>
 			<feature>Added simple assert() function</feature>
 			<feature>getCallee will now insert "constructor" instead of repeating the class name</feature>
+		</features>
+		<fixes>
+			<fix>Corrected a small spelling mistake in noMethodBodyWarning()</fix>
+			<fix>Fixed introspection in breakPoint()</fix>
+			<fix>Corrected property name limit lits in Olog.describe</fix>
+		</fixes>
 	</version>
 	<version id="1.2.7">
 		<features>

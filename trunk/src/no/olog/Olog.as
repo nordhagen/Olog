@@ -621,23 +621,30 @@ package no.olog
 		 * 					argument to invoke a full discription of the object passed as the first argument</li> 
 		 * 				</ol>
 		 */
-		public static function breakPoint ( ...args ):void
+		public static function breakPoint ( ... args ):void
 		{
 			Ocore.trace( "Breakpoint reached: " + getCallee( 5 ), Oplist.MARKER_COLOR_INDEX );
 
 			if (args && args.length > 0)
 			{
-				if (args[0] is Object && args[1] === "*")
+				if (!Otils.isPrimitive( args[0] ))
 				{
-					Ocore.describe( args[0], Oplist.MARKER_COLOR_INDEX );
-				}
-				else if (args[0] is Object && args[1] is String)
-				{
-					Ocore.describe( args[0], Oplist.MARKER_COLOR_INDEX, null, args.slice( 1 ) );
+					if (args.length == 1 && !Otils.isPrimitive( args[0] ))
+					{
+						Ocore.describe( args[0], Oplist.MARKER_COLOR_INDEX );
+					}
+					if (args.length > 1 && args[1] is String && args[1] != "*")
+					{
+						Ocore.describe( args[0], Oplist.MARKER_COLOR_INDEX, null, args.slice( 1 ) );
+					}
+					else
+					{
+						Ocore.forceExpandedArrayTrace( args, Oplist.MARKER_COLOR_INDEX );
+					}
 				}
 				else
 				{
-					Ocore.forceExpandedArrayTrace( args, Oplist.MARKER_COLOR_INDEX );
+					Ocore.trace( args[0], Oplist.MARKER_COLOR_INDEX );
 				}
 			}
 		}
