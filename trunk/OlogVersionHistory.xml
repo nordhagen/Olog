@@ -1,4 +1,14 @@
 <versions>
+	<version id="1.2.9">
+		<features>
+			<feature>Added enableAssertions as a property on Olog to enable/disable asserts in code</feature>
+			<feature>Added argument maxDurationMS to newTimeMarker for optional tracking of how operations over- or undershoot their allowed execution times</feature>
+		</features>
+		<fixes>
+			<fix>Olog now only captures key presses for filtering lines when it has stage focus</fix>
+			<fix>RegEx bugfix in traceCallStack</fix>
+		</fixes>
+	</version>
 	<version id="1.2.8">
 		<features>
 			<feature>Added simple assert() function</feature>

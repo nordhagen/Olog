@@ -18,10 +18,10 @@ package no.olog.utilfunctions
 		for (var i:int = 2; i < num; i++)
 		{
 			stackLine = stackLines[i];
-			classAndFunction = stackLine.match( /(?<=::)\w+?(::|\/)?\w+?\(\)/ )[0];
+			classAndFunction = stackLine.match( /\w+?(::|\/)?(\w| )+?\(\)/ )[0];
 			lineNumberMatches = stackLine.match( /(?<=:)\d+/ );
 			lineNumber = (lineNumberMatches) ? ", line " + lineNumberMatches[0] : "";
-			output += "\n\t\t\t\t\t\t" + classAndFunction.replace( "/", "." ) + lineNumber;
+			output += "\n\t" + classAndFunction.replace( "/", "." ) + lineNumber;
 		}
 
 		Olog.trace( output, 1, origin );

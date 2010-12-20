@@ -649,5 +649,10 @@
 			if (Otils.getSavedOpenState())
 				Owindow.open();
 		}
+
+		public static function hasFocus ():Boolean
+		{
+			return exists && (_i.stage.focus == _i || _i.stage.focus == _field);
+		}
 	}
 }
