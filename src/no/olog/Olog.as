@@ -197,13 +197,15 @@ package no.olog
 		 * Creates a timing marker that you can later complete by calling completeTimeMarker() to 
 		 * output the time in between.
 		 * @param name String reference to use when the marker completes an results are displayed.
+		 * @param origin The object from which the time marker was generated. See Olog.trace's origin argument.
+		 * @param maxDurationMS The maximum time the operation is allowed to take in milliseconds.
 		 * @return An integer ID to use as argument when calling completeTimeMarker(). 
 		 * @see completeTimeMarker()
 		 */
-		public static function newTimeMarker ( name:String = null, origin:Object = null ):int
+		public static function newTimeMarker ( name:String = null, origin:Object = null, maxDurationMS:uint = 0 ):int
 		{
 			if (Oplist.loggingEnabled)
-				return Ocore.newTimeMarker( name, origin );
+				return Ocore.newTimeMarker( name, origin, maxDurationMS );
 			else
 				return -1;
 		}
@@ -407,6 +409,22 @@ package no.olog
 		public static function get contextMenuItem ():Boolean
 		{
 			return Ocore.hasCMI;
+		}
+
+		/**
+		 * Toggles assertions/tests on/off
+		 */
+		public static function set enableAssertions ( val:Boolean ):void
+		{
+			Oplist.enableAssertions = val;
+		}
+
+		/**
+		 * Toggles assertions/tests on/off
+		 */
+		public static function get enableAssertions ():Boolean
+		{
+			return Oplist.enableAssertions;
 		}
 
 		/**

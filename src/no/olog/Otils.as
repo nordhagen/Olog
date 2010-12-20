@@ -355,52 +355,6 @@ package no.olog
 			return uint( "0x" + String( Oplist.TEXT_COLORS_HEX[level] ).substr( 1 ) );
 		}
 
-		// internal static function getBreakPoint ( args:Array ):String
-		// {
-		// var msg:String = "Breakpoint reached: " + getCallee( 3 );
-		//
-		// if (args && args.length > 0)
-		// {
-		// var num:int = args.length, i:int, tabs:String = Oplist.LINE_START_TABS, obj:Object, objName:String, propertyName:String;
-		// if (args[0] is Object && args[1] === "*")
-		// {
-		// msg += getDescriptionOf( args[0] );
-		// }
-		// else if (args[0] is Object && args[1] is String)
-		// {
-		// objName = getQualifiedClassName( obj );
-		// obj = args[0];
-		// for (i = 1; i < num; i++)
-		// {
-		// propertyName = String( args[i] );
-		// if (obj.hasOwnProperty( propertyName ))
-		// {
-		// msg += "\n" + tabs + propertyName + ": " + obj[propertyName];
-		// }
-		// else
-		// {
-		// msg += "\n" + tabs + "[" + propertyName + " not a public property of " + objName + "]";
-		// }
-		// }
-		// }
-		// else
-		// {
-		// for (i = 0; i < num; i++)
-		// {
-		// if (typeof(args[i]) == "string" || "int" || "number" || "boolean")
-		// {
-		// msg += "\n" + tabs + args[i];
-		// }
-		// else
-		// {
-		// msg += "\n" + tabs + "[arg " + i + " not a primitive]";
-		// }
-		// }
-		// }
-		// }
-		//
-		// return msg;
-		// }
 		internal static function getDescriptionOf ( o:Object, limitProperties:Array = null ):String
 		{
 			var newLine:String = "\n" + Oplist.LINE_START_TABS;

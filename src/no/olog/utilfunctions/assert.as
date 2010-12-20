@@ -1,5 +1,4 @@
-package no.olog.utilfunctions
-{
+package no.olog.utilfunctions {
 	import no.olog.Olog;
 
 	/**
@@ -10,19 +9,16 @@ package no.olog.utilfunctions
 	 * in which case the function will be called and the returned value will be evaluated against the expected argument
 	 * @param args Any arguments to use when calling actual if actual is a function reference 
 	 */
-	public function assert ( testName:String, expected:*, actual:*, ... args ) : Boolean
-	{
+	public function assert ( testName:String, expected:*, actual:*, ... args ):Boolean {
+		if (!Olog.enableAssertions) true;
 		var level:uint;
 		var msg:String = "[Test \"" + testName + "\"] ";
 		var location:String = "";
 		var result:* = (actual is Function) ? actual.apply( this, args ) : actual;
-		if (expected === result)
-		{
+		if (expected === result) {
 			msg += "passed";
 			level = 4;
-		}
-		else
-		{
+		} else {
 			msg += "failed, expected " + String( expected ) + " was " + result;
 			level = 3;
 			location = getCallee( 3 );

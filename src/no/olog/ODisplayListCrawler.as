@@ -56,7 +56,6 @@ package no.olog
 				}
 				else
 				{
-					// propertyValue = (property && child.hasOwnProperty( property )) ? "." + property + " = " + child[property] : "";
 					tree += "\n" + tabs + i + "." + child.toString().match( /(?<=\s|\.)\w+(?=\]|$)/ )[0] + _getPropertyValue( child, property );
 				}
 			}
