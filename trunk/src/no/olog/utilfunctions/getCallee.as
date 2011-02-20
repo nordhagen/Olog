@@ -13,7 +13,7 @@ package no.olog.utilfunctions
 		var stackLine:String = new Error().getStackTrace().split( "\n" , calltStackIndex + 1 )[calltStackIndex];
 		
 		// Finds a pair of parenthesis and any word characters in front of them		
-		var functionName:String = stackLine.match( /\w+\(\)/ )[0];
+		var functionName:String = stackLine.match( /\w+\(\)/g )[0];
 		
 		// Class name and line number depends on the function existing in a physical class file
 		var className:String;

@@ -1,11 +1,10 @@
-﻿package no.olog
-{
+﻿package no.olog {
 	import flash.display.DisplayObjectContainer;
-	import flash.display.Stage;
 	import flash.display.GradientType;
 	import flash.display.Graphics;
 	import flash.display.Shape;
 	import flash.display.Sprite;
+	import flash.display.Stage;
 	import flash.events.ContextMenuEvent;
 	import flash.events.Event;
 	import flash.events.MouseEvent;
@@ -13,7 +12,6 @@
 	import flash.filters.DropShadowFilter;
 	import flash.geom.Matrix;
 	import flash.geom.Rectangle;
-	import flash.text.AntiAliasType;
 	import flash.text.GridFitType;
 	import flash.text.TextField;
 	import flash.text.TextFieldAutoSize;
@@ -23,8 +21,7 @@
 	import flash.ui.ContextMenuItem;
 
 	/**	 * @author Oyvind Nordhagen	 * @date 20. feb. 2010	 */
-	internal class Owindow extends Sprite
-	{
+	internal class Owindow extends Sprite {
 		internal static var exists:Boolean;
 		private static var _i:Owindow;
 		private static var _titleBarBg:Sprite;
@@ -47,14 +44,12 @@
 		private static var _prefPaneOpen:Boolean;
 		private static var _lastUnreadColorIndex:int = 0;
 
-		public function Owindow ()
-		{
+		public function Owindow () {
 			_init();
 			visible = false;
 		}
 
-		private function _init ():void
-		{
+		private function _init ():void {
 			_initTitleBar();
 			_initUnread();
 			_initBg();
@@ -66,8 +61,7 @@
 			addEventListener( Event.ADDED_TO_STAGE, Ocore.onAddedToStage );
 		}
 
-		private function _initMemUsageField ():void
-		{
+		private function _initMemUsageField ():void {
 			_memUsageField = new TextField();
 			_memUsageField.mouseEnabled = false;
 			_memUsageField.defaultTextFormat = new TextFormat( "_sans", 10, Oplist.TEXT_COLORS_UINT[0] );
@@ -78,13 +72,11 @@
 			addChild( _memUsageField );
 		}
 
-		private static function _positionMemUsageField ():void
-		{
+		private static function _positionMemUsageField ():void {
 			_memUsageField.x = _prefsButton.x - _prefsButton.width * 0.5 - _memUsageField.width - Oplist.PADDING * 2;
 		}
 
-		private function _initPrefPane ():void
-		{
+		private function _initPrefPane ():void {
 			var bSize:Number = Oplist.TB_HEIGHT * 0.45;
 			// PREFS BUTTON - NB NOT INSIDE BUTTON WRAPPER
 			_prefsButton = _getTitleBarButton();
@@ -107,66 +99,55 @@
 			addChild( _prefPane );
 		}
 
-		internal static function get instance ():Owindow
-		{
-			if (!_i)
-				_i = new Owindow();
+		internal static function get instance ():Owindow {
+			if (!_i) _i = new Owindow();
 			return _i;
 		}
 
-		internal static function getLogText ():String
-		{
+		internal static function getLogText ():String {
 			return _field.text;
 		}
 
-		internal static function get isOpen ():Boolean
-		{
+		internal static function get isOpen ():Boolean {
 			return (_i) ? _i.visible : false;
 		}
 
-		internal static function get isMinimized ():Boolean
-		{
+		internal static function get isMinimized ():Boolean {
 			return _isMinimized;
 		}
 
-		internal static function open ( e:Event = null ):void
-		{
+		internal static function open ( e:Event = null ):void {
 			_i.visible = true;
 			_updateCMI();
 			Otils.recordWindowState();
 			Otils.startMemoryUsageUpdater();
 		}
 
-		internal static function displayMemoryUsage ( memMB:Number ):void
-		{
+		internal static function displayMemoryUsage ( memMB:Number ):void {
 			_memUsageField.textColor = (memMB < Oplist.memoryUsageLimitMB) ? Oplist.TEXT_COLORS_UINT[0] : Oplist.TEXT_COLORS_UINT[3];
 			_memUsageField.text = memMB + " MB";
 			_positionMemUsageField();
 		}
 
-		internal static function close ( e:Event = null ):void
-		{
+		internal static function close ( e:Event = null ):void {
 			_i.visible = false;
 			_updateCMI();
 			Otils.recordWindowState();
 			Otils.stopMemoryUsageUpdater();
 		}
 
-		internal static function write ( str:String ):void
-		{
+		internal static function write ( str:String ):void {
 			_field.htmlText += "<p>" + str + "</p>";
 			_updateUnread();
 			if (Oplist.scrollOnNewLine)
 				scrollEnd();
 		}
 
-		internal static function showNewVersionMsg ( msg:String ):void
-		{
+		internal static function showNewVersionMsg ( msg:String ):void {
 			_titleBarField.htmlText += msg;
 		}
 
-		internal static function maximize ():void
-		{
+		internal static function maximize ():void {
 			if (isMinimized)
 				Owindow.unMinimize();
 			_i.x = Oplist.PADDING;
@@ -176,61 +157,49 @@
 			_resize( w, h );
 		}
 
-		internal static function resizeToDefault ():void
-		{
-			if (exists && !isMinimized)
-			{
+		internal static function resizeToDefault ():void {
+			if (exists && !isMinimized) {
 				_i.x = Oplist.x;
 				_i.y = Oplist.y;
 				_resize( Oplist.width, Oplist.height );
 			}
 		}
 
-		internal static function updateTitleBar ():void
-		{
+		internal static function updateTitleBar ():void {
 			_titleBarField.htmlText = Ocore.getTitleBarText();
 		}
 
-		internal static function createCMI ():void
-		{
-			if (_cmi )
-			{
+		internal static function createCMI ():void {
+			if (_cmi ) {
 				return;
 			}
 
 			var target:DisplayObjectContainer;
-			if (Ocore.originalParent is Stage)
-			{
+			if (Ocore.originalParent is Stage) {
 				target = Ocore.originalParent.getChildAt( 0 ) as DisplayObjectContainer;
 			}
-			else
-			{
+			else {
 				target = _i.parent;
 			}
 
-			try
-			{
+			try {
 				_cmi = new ContextMenuItem( Oplist.CMI_OPEN_LABEL );
 				_cmi.addEventListener( ContextMenuEvent.MENU_ITEM_SELECT, Ocore.evalOpenClose );
 				target.contextMenu = new ContextMenu();
 				target.contextMenu["customItems"].push( _cmi );
 			}
-			catch(error:Error)
-			{
+			catch(error:Error) {
 				Ocore.trace( "Unable to create context menu item", 1, "Olog" );
 			}
 		}
 
-		internal static function removeCMI ():void
-		{
+		internal static function removeCMI ():void {
 			if (!_cmi)
 				return;
 			var cmis:Array = _i.stage.contextMenu["customItems"];
 			var num:int = cmis.length;
-			for (var i:int = 0; i < num; i++)
-			{
-				if (cmis[i] == _cmi)
-				{
+			for (var i:int = 0; i < num; i++) {
+				if (cmis[i] == _cmi) {
 					cmis.splice( i, 1 );
 					break;
 				}
@@ -239,35 +208,29 @@
 			_i.stage.contextMenu = null;
 		}
 
-		internal static function clear ():void
-		{
+		internal static function clear ():void {
 			_field.text = "";
 		}
 
-		internal static function scrollHome ():void
-		{
+		internal static function scrollHome ():void {
 			_field.scrollV = 0;
 		}
 
-		internal static function scrollDown ():void
-		{
+		internal static function scrollDown ():void {
 			if (_field.scrollV < _field.maxScrollV)
 				_field.scrollV++;
 		}
 
-		internal static function scrollUp ():void
-		{
-			 if (_field.scrollV > 0)
-			 _field.scrollV--;
+		internal static function scrollUp ():void {
+			if (_field.scrollV > 0)
+				_field.scrollV--;
 		}
 
-		internal static function scrollEnd ():void
-		{
-			 _field.scrollV = _field.maxScrollV;
+		internal static function scrollEnd ():void {
+			_field.scrollV = _field.maxScrollV;
 		}
 
-		internal static function minimize ():void
-		{
+		internal static function minimize ():void {
 			_bg.visible = false;
 			_field.visible = false;
 			_dragger.visible = false;
@@ -276,8 +239,7 @@
 			_prefPane.visible = false;
 		}
 
-		internal static function unMinimize ():void
-		{
+		internal static function unMinimize ():void {
 			_bg.visible = true;
 			_field.visible = true;
 			_dragger.visible = true;
@@ -287,13 +249,11 @@
 			_prefPane.visible = _prefPaneOpen;
 		}
 
-		internal static function moveToTop ( e:Event = null ):void
-		{
+		internal static function moveToTop ( e:Event = null ):void {
 			_i.parent.setChildIndex( _i, _i.parent.numChildren - 1 );
 		}
 
-		private static function _updateCMI ():void
-		{
+		private static function _updateCMI ():void {
 			if (!_cmi)
 				return;
 			if (_i.visible)
@@ -302,8 +262,7 @@
 				_cmi.caption = Oplist.CMI_OPEN_LABEL;
 		}
 
-		private function _initTitleBar ():void
-		{
+		private function _initTitleBar ():void {
 			var w:int = Oplist.DEFAULT_WIDTH;
 			_titleBarBg = new Sprite();
 			_drawTitleBarBg( w );
@@ -368,8 +327,7 @@
 			addChild( _titlebarButtonWrapper );
 		}
 
-		private function _getTitleBarButton ():Sprite
-		{
+		private function _getTitleBarButton ():Sprite {
 			var r:Number = Oplist.TB_HEIGHT * 0.225;
 			var b:Sprite = new Sprite();
 			var g:Graphics = b.graphics;
@@ -380,28 +338,28 @@
 			return b;
 		}
 
-		private function _addTitleBarButtonMouseOver ( b:Sprite ):void
-		{
+		private function _addTitleBarButtonMouseOver ( b:Sprite ):void {
 			b.addEventListener( MouseEvent.MOUSE_OVER, _onWindowBtnOver );
 			b.addEventListener( MouseEvent.MOUSE_OUT, _onWindowBtnOut );
 		}
 
-		private function _onMouseWheel ( e:MouseEvent ):void
-		{
+		private function _onMouseWheel ( e:MouseEvent ):void {
 			if (e.delta < 0)
 				scrollDown();
 			else if (e.delta > 0)
 				scrollUp();
 		}
 
-		private function _onPrefsClick ( e:MouseEvent ):void
-		{
+		private function _onPrefsClick ( e:MouseEvent ):void {
 			_prefPane.visible = !_prefPane.visible;
 			_prefPaneOpen = _prefPane.visible;
+			if (_prefPaneOpen)
+				_field.height -= _prefPane.height;
+			else
+				_field.height += _prefPane.height;
 		}
 
-		private function _onMinimizeClick ( e:MouseEvent ):void
-		{
+		private function _onMinimizeClick ( e:MouseEvent ):void {
 			if (!_isMinimized)
 				minimize();
 			else
@@ -409,26 +367,21 @@
 			Otils.recordWindowState();
 		}
 
-		private function _onWindowBtnOver ( e:MouseEvent ):void
-		{
+		private function _onWindowBtnOver ( e:MouseEvent ):void {
 			(e.target as Sprite).alpha = Oplist.BTN_OVER_ALPHA;
 		}
 
-		private function _onWindowBtnOut ( e:MouseEvent ):void
-		{
+		private function _onWindowBtnOut ( e:MouseEvent ):void {
 			(e.target as Sprite).alpha = Oplist.BTN_UP_ALPHA;
 		}
 
-		private function _onMaximizeClick ( e:MouseEvent ):void
-		{
+		private function _onMaximizeClick ( e:MouseEvent ):void {
 			maximize();
 			Otils.recordWindowState();
 		}
 
-		private static function _updateUnread ():void
-		{
-			if (_isMinimized)
-			{
+		private static function _updateUnread ():void {
+			if (_isMinimized) {
 				_numUnread++;
 				_unreadCountField.text = String( _numUnread );
 				_unreadCountDisplay.visible = true;
@@ -436,34 +389,29 @@
 			}
 		}
 
-		private static function _updateUnreadBckgroundColor ():void
-		{
+		private static function _updateUnreadBckgroundColor ():void {
 			var lastLineLevel:int = Ocore.getLastLineLevel();
-			if (lastLineLevel <= Oplist.TEXT_COLOR_LAST_ERROR_INDEX && lastLineLevel > _lastUnreadColorIndex)
-			{
+			if (lastLineLevel <= Oplist.TEXT_COLOR_LAST_ERROR_INDEX && lastLineLevel > _lastUnreadColorIndex) {
 				_lastUnreadColorIndex = (lastLineLevel == 1) ? 0 : lastLineLevel;
 				var color:uint = Otils.getLevelColorAsUint( _lastUnreadColorIndex );
 				_drawUnreadBackground( color );
 			}
 		}
 
-		private static function _resetAndHideUnread ():void
-		{
+		private static function _resetAndHideUnread ():void {
 			_numUnread = 0;
 			_lastUnreadColorIndex = 0;
 			_unreadCountDisplay.visible = false;
 		}
 
-		private function _initUnread ():void
-		{
-			var fontSize:int = 10;
-			var fmt:TextFormat = new TextFormat( Oplist.TB_FONT, fontSize, 0xffffff, true );
+		private function _initUnread ():void {
+			var fmt:TextFormat = new TextFormat( Oplist.TB_FONT, Oplist.TB_FONT_SIZE, 0xffffff, true );
 			fmt.align = TextFormatAlign.CENTER;
 			_unreadCountField = new TextField();
 			_unreadCountField.defaultTextFormat = fmt;
 			_unreadCountField.text = "0";
 			_unreadCountField.width = 20;
-			_unreadCountField.height = fontSize + 4;
+			_unreadCountField.height = Oplist.TB_FONT_SIZE + 4;
 			_unreadCountField.x -= 1;
 			_unreadCountField.y = (Oplist.TB_HEIGHT - _unreadCountField.height) * 0.5;
 			_unreadCountField.mouseEnabled = false;
@@ -476,8 +424,7 @@
 			_drawUnreadBackground( bgColor );
 		}
 
-		private static function _drawUnreadBackground ( color:uint ):void
-		{
+		private static function _drawUnreadBackground ( color:uint ):void {
 			var size:Number = Oplist.TB_HEIGHT - Oplist.PADDING * 2;
 			var margin:Number = (Oplist.TB_HEIGHT - size) * 0.5;
 			var backgroundRadius:Number = size * 0.5;
@@ -489,8 +436,7 @@
 			g.endFill();
 		}
 
-		private function _initField ():void
-		{
+		private function _initField ():void {
 			var fmt:TextFormat = new TextFormat();
 			fmt.tabStops = Oplist.TAB_STOPS;
 			_field = new TextField();
@@ -502,7 +448,6 @@
 			_field.styleSheet = Ocore.getLogCSS();
 			_field.width = Oplist.DEFAULT_WIDTH - Oplist.PADDING * 2;
 			_field.height = Oplist.DEFAULT_HEIGHT - Oplist.TB_HEIGHT - Oplist.PADDING * 2;
-			_field.antiAliasType = AntiAliasType.ADVANCED;
 			_field.gridFitType = GridFitType.PIXEL;
 			_field.x = Oplist.PADDING;
 			_field.y = Oplist.TB_HEIGHT + Oplist.PADDING;
@@ -512,20 +457,17 @@
 			addChild( _field );
 		}
 
-		internal static function setLineWrapping ( val:Boolean ):void
-		{
+		internal static function setLineWrapping ( val:Boolean ):void {
 			Oplist.wrapLines = val;
 			if (_field)
 				_field.wordWrap = val;
 		}
 
-		internal static function onMouseOver ( e:MouseEvent ):void
-		{
+		internal static function onMouseOver ( e:MouseEvent ):void {
 			_i.stage.focus = _field;
 		}
 
-		private function _initDragger ():void
-		{
+		private function _initDragger ():void {
 			_dragger = new Sprite();
 			var g:Graphics = _dragger.graphics;
 			g.lineStyle( 1, 0xffffff, 0.5 );
@@ -546,45 +488,38 @@
 			addChild( _dragger );
 		}
 
-		private function _onTitleBarDown ( e:MouseEvent ):void
-		{
+		private function _onTitleBarDown ( e:MouseEvent ):void {
 			stage.addEventListener( MouseEvent.MOUSE_UP, _onTitleBarUp );
 			_i.startDrag();
 		}
 
-		private function _onTitleBarUp ( e:MouseEvent ):void
-		{
+		private function _onTitleBarUp ( e:MouseEvent ):void {
 			stage.removeEventListener( MouseEvent.MOUSE_UP, _onTitleBarUp );
 			_i.stopDrag();
 			Otils.recordWindowState();
 		}
 
-		private function _onDraggerDown ( e:MouseEvent ):void
-		{
+		private function _onDraggerDown ( e:MouseEvent ):void {
 			stage.addEventListener( Event.ENTER_FRAME, _onDraggerMove );
 			stage.addEventListener( MouseEvent.MOUSE_UP, _onDraggerUp );
 		}
 
-		private function _onDraggerMove ( event:Event ):void
-		{
+		private function _onDraggerMove ( event:Event ):void {
 			var w:int = stage.mouseX + _dragger.width * 0.5 - x;
 			var h:int = stage.mouseY + _dragger.height * 0.5 - y;
 			_resize( w, h );
 		}
 
-		private function _onDraggerUp ( e:MouseEvent ):void
-		{
+		private function _onDraggerUp ( e:MouseEvent ):void {
 			stage.removeEventListener( MouseEvent.MOUSE_UP, _onDraggerUp );
 			stage.removeEventListener( Event.ENTER_FRAME, _onDraggerMove );
 			Otils.recordWindowState();
 		}
 
-		private static function _resize ( w:int, h:int ):void
-		{
+		private static function _resize ( w:int, h:int ):void {
 			var titlebarHeight:int = Oplist.TB_HEIGHT;
 			var padding:int = Oplist.PADDING;
-			if (w > Oplist.MIN_WIDTH)
-			{
+			if (w > Oplist.MIN_WIDTH) {
 				_drawTitleBarBg( w );
 				_titleBarBg.width = w;
 				_titleBarField.width = w - padding * 2;
@@ -596,8 +531,7 @@
 				_prefPane.width = w;
 				_positionMemUsageField();
 			}
-			if (h > Oplist.MIN_HEIGHT)
-			{
+			if (h > Oplist.MIN_HEIGHT) {
 				_bg.height = h - titlebarHeight;
 				_field.height = h - titlebarHeight - padding * 2;
 				_dragger.y = h - _dragger.height;
@@ -605,8 +539,7 @@
 			}
 		}
 
-		private static function _drawTitleBarBg ( w:int ):void
-		{
+		private static function _drawTitleBarBg ( w:int ):void {
 			var h:int = Oplist.TB_HEIGHT;
 			var matrix:Matrix = new Matrix();
 			matrix.createGradientBox( w, h, (Math.PI / 180) * 90 );
@@ -617,8 +550,7 @@
 			g.endFill();
 		}
 
-		private function _initBg ():void
-		{
+		private function _initBg ():void {
 			_bg = new Shape();
 			var g:Graphics = _bg.graphics;
 			g.beginFill( Oplist.BG_COL, Oplist.BG_ALPHA );
@@ -628,18 +560,15 @@
 			addChild( _bg );
 		}
 
-		internal static function replaceLastLine ( text:String ):void
-		{
+		internal static function replaceLastLine ( text:String ):void {
 			_field.htmlText = Owindow._field.htmlText.replace( /<p>(?!.*<p>).+$/gi, _wrapForOutput( text ) );
 		}
 
-		private static function _wrapForOutput ( text:String ):String
-		{
+		private static function _wrapForOutput ( text:String ):String {
 			return "<p>" + text + "</p>";
 		}
 
-		internal static function setDefaultBounds ():void
-		{
+		internal static function setDefaultBounds ():void {
 			var b:Rectangle = Otils.getDefaultWindowBounds();
 			_i.x = b.x;
 			_i.y = b.y;
@@ -650,8 +579,7 @@
 				Owindow.open();
 		}
 
-		public static function hasFocus ():Boolean
-		{
+		public static function hasFocus ():Boolean {
 			return exists && (_i.stage.focus == _i || _i.stage.focus == _field);
 		}
 	}

@@ -1,5 +1,5 @@
-package no.olog
-{
+package no.olog {
+	import no.olog.utilfunctions.getCallee;
 	import flash.events.TimerEvent;
 	import flash.geom.Rectangle;
 	import flash.net.SharedObject;
@@ -13,22 +13,18 @@ package no.olog
 	 * @author Oyvind Nordhagen
 	 * @date 19. feb. 2010
 	 */
-	internal class Otils
-	{
+	internal class Otils {
 		private static var _so:SharedObject;
 		private static var _memUsageUpdater:Timer;
 
-		public function Otils ():void
-		{
+		public function Otils ():void {
 		}
 
-		internal static function parseMsgType ( message:Object ):String
-		{
+		internal static function parseMsgType ( message:Object ):String {
 			var className:String = getClassName( message );
 			var classNameSupported:String = getClassName( message, true );
 			var result:String;
-			switch (classNameSupported)
-			{
+			switch (classNameSupported) {
 				case "String":
 					result = (message != "") ? String( message ) : Oplist.EMPTY_MSG_STRING;
 					break;
@@ -85,26 +81,23 @@ package no.olog
 				default:
 					result = String( message );
 			}
-
-			return result.replace( /</g, "&lt;" ).replace( /\>/g, "&gt;" );
+			
+			return result.replace( /</g, "&lt;" ).replace( /\>/g, "&gt;" ) || result;
 		}
 
-		private static function _parseArrayType ( message:Object ) : String
-		{
-			if (!Oplist.expandArrayItems)
-			{
+		private static function _parseArrayType ( message:Object ):String {
+			if (!Oplist.expandArrayItems) {
 				return message.join( ", " ) + " (" + message.length + " items)";
 			}
-			else
-			{
+			else {
 				var result:String = "[";
 				var num:int = message.length;
-				for (var i:int = 0; i < num; i++)
-				{
-					result += parseMsgType( message [i] );
-					if (i < num - 1)
-					{
-						result += ", ";
+				for (var i:int = 0; i < num; i++) {
+					if (message [i]) {
+						result += parseMsgType( message [i] );
+						if (i < num - 1) {
+							result += ", ";
+						}						
 					}
 				}
 
@@ -112,35 +105,28 @@ package no.olog
 			}
 		}
 
-		private static function _parseNumberMessage ( message:Object ) : String
-		{
-			if (!isNaN( uint( message ) ) && uint( message ).toString( 16 ).length == 6)
-			{
+		private static function _parseNumberMessage ( message:Object ):String {
+			if (!isNaN( uint( message ) ) && uint( message ).toString( 16 ).length == 6) {
 				return "0x" + uint( message ).toString( 16 );
 			}
-			else
-			{
+			else {
 				return String( message );
 			}
 		}
 
-		private static function _getClosestStackMethod ( message:Object ):String
-		{
+		private static function _getClosestStackMethod ( message:Object ):String {
 			return message.getStackTrace().split( "\n" )[1].replace( "\t", " " );
 		}
 
-		private static function _styleEventType ( type:String ):String
-		{
+		private static function _styleEventType ( type:String ):String {
 			return type.replace( /[A-Z]/, "_$&" ).toUpperCase();
 		}
 
-		private static function _parseProperties ( message:Object, includeType:Boolean = false ):String
-		{
+		private static function _parseProperties ( message:Object, includeType:Boolean = false ):String {
 			var result:String = "";
 			var props:XMLList = describeType( message ).accessor;
 			var num:int = props.length();
-			for (var i:int = 0; i < num; i++)
-			{
+			for (var i:int = 0; i < num; i++) {
 				var p:XML = props[i];
 				result += p.@name;
 				if (includeType)
@@ -152,14 +138,12 @@ package no.olog
 			return result;
 		}
 
-		internal static function parseOrigin ( origin:Object = null ):String
-		{
+		internal static function parseOrigin ( origin:Object = null ):String {
 			var result:String = (origin is String) ? String( origin ) : getClassName( origin );
 			return (result != "null") ? result : "";
 		}
 
-		internal static function getClassName ( o:Object, supported:Boolean = false ):String
-		{
+		internal static function getClassName ( o:Object, supported:Boolean = false ):String {
 			if (o == null)
 				return "null";
 
@@ -167,16 +151,13 @@ package no.olog
 			var info:XML = describeType( o );
 			var className:String = _extractClassOnly( info.@name );
 
-			if (!supported || _isSupportedClass( className ))
-			{
+			if (!supported || _isSupportedClass( className )) {
 				result = className;
 			}
-			else
-			{
+			else {
 				var inheritanceTree:XMLList = info.extendsClass;
 				var num:int = inheritanceTree.length();
-				for (var i:int = 0; i < num; i++)
-				{
+				for (var i:int = 0; i < num; i++) {
 					result = extractClassNameFromPackage( inheritanceTree[i].@type );
 					if (_isSupportedClass( result ))
 						break;
@@ -185,26 +166,20 @@ package no.olog
 			return result;
 		}
 
-		private static function extractClassNameFromPackage ( packageString:String ):String
-		{
-			if (packageString.indexOf( "::" ) != -1)
-			{
+		private static function extractClassNameFromPackage ( packageString:String ):String {
+			if (packageString.indexOf( "::" ) != -1) {
 				return packageString.split( "::" )[1];
 			}
-			else
-			{
+			else {
 				return packageString;
 			}
 		}
 
-		private static function _isSupportedClass ( name:String ):Boolean
-		{
+		private static function _isSupportedClass ( name:String ):Boolean {
 			var result:Boolean = false;
 			var num:int = Oplist.SUPPORTED_TYPES.length;
-			for (var i:int = 0; i < num; i++)
-			{
-				if (Oplist.SUPPORTED_TYPES[i] == name)
-				{
+			for (var i:int = 0; i < num; i++) {
+				if (Oplist.SUPPORTED_TYPES[i] == name) {
 					result = true;
 					break;
 				}
@@ -212,27 +187,23 @@ package no.olog
 			return result;
 		}
 
-		private static function _extractClassOnly ( className:String ):String
-		{
+		private static function _extractClassOnly ( className:String ):String {
 			if (className.indexOf( ":" ) != -1)
 				return className.split( "::" )[1];
 			else
 				return className;
 		}
 
-		internal static function validateLevel ( level:int ):int
-		{
+		internal static function validateLevel ( level:int ):int {
 			return Math.min( Math.max( level, 0 ), Oplist.TEXT_COLOR_LAST_INDEX );
 		}
 
-		internal static function getDefaultWindowBounds ():Rectangle
-		{
+		internal static function getDefaultWindowBounds ():Rectangle {
 			var padding:int = Oplist.PADDING;
 			var paddingX2:int = padding * 2;
 			var b:Rectangle = new Rectangle();
 			_so = SharedObject.getLocal( "OlogSettings" );
-			if (_so)
-			{
+			if (_so) {
 				var fillScreenWidth:int = Owindow.instance.stage.stageWidth - paddingX2;
 				var fillScreenHeight:int = Owindow.instance.stage.stageHeight - paddingX2;
 				var restoredWidth:int = uint( _so.data.width );
@@ -242,8 +213,7 @@ package no.olog
 				b.width = Math.min( restoredWidth, fillScreenWidth );
 				b.height = Math.min( restoredHeight, fillScreenHeight );
 			}
-			else
-			{
+			else {
 				b.x = Math.max( Oplist.x, padding );
 				b.y = Math.max( Oplist.y, padding );
 				b.width = (Oplist.width != -1) ? Oplist.width : Oplist.DEFAULT_WIDTH;
@@ -253,35 +223,29 @@ package no.olog
 			return b;
 		}
 
-		internal static function getDaysSinceVersionCheck ():int
-		{
+		internal static function getDaysSinceVersionCheck ():int {
 			_so = SharedObject.getLocal( "OlogSettings" );
-			if (_so)
-			{
+			if (_so) {
 				var now:int = new Date().getTime();
 				var then:int = int( _so.data.lastVersionCheck );
 				return (then > 0) ? Math.floor( (now - then) / Oplist.DAY_IN_MS ) : Oplist.VERSION_CHECK_INTERVAL_DAYS;
 			}
-			else
-			{
+			else {
 				return Oplist.VERSION_CHECK_INTERVAL_DAYS;
 			}
 		}
 
-		internal static function getSavedMinimizedState ():Boolean
-		{
+		internal static function getSavedMinimizedState ():Boolean {
 			_so = SharedObject.getLocal( "OlogSettings" );
 			return (_so) ? Boolean( _so.data.isMinimized ) : false;
 		}
 
-		internal static function getSavedOpenState ():Boolean
-		{
+		internal static function getSavedOpenState ():Boolean {
 			_so = SharedObject.getLocal( "OlogSettings" );
 			return (_so) ? Boolean( _so.data.isOpen ) : true;
 		}
 
-		internal static function recordWindowState ():void
-		{
+		internal static function recordWindowState ():void {
 			if (!Oplist.rememberWindowState)
 				return;
 			if (!_so)
@@ -296,29 +260,24 @@ package no.olog
 			_savePersistentData();
 		}
 
-		internal static function recordVersionCheckTime ():void
-		{
+		internal static function recordVersionCheckTime ():void {
 			if (!_so)
 				_so = SharedObject.getLocal( "OlogSettings" );
 			_so.data.lastVersionCheck = new Date().getTime();
 			_savePersistentData();
 		}
 
-		private static function _savePersistentData ():void
-		{
+		private static function _savePersistentData ():void {
 			var flushStatus:String = null;
-			try
-			{
+			try {
 				flushStatus = _so.flush();
 			}
-			catch (e:Error)
-			{
+			catch (e:Error) {
 				Olog.trace( e );
 			}
 		}
 
-		internal static function formatTime ( ms:int ):String
-		{
+		internal static function formatTime ( ms:int ):String {
 			var d:Date = new Date( ms );
 			var strms:String = addLeadingZeroes( String( d.getMilliseconds() ), 3 );
 			var strsec:String = addLeadingZeroes( String( d.getSeconds() ), 2 );
@@ -327,17 +286,14 @@ package no.olog
 			return strhrs + ":" + strmin + ":" + strsec + "'" + strms;
 		}
 
-		internal static function addLeadingZeroes ( numString:String, numZeroes:int = 2 ):String
-		{
+		internal static function addLeadingZeroes ( numString:String, numZeroes:int = 2 ):String {
 			while (numString.length < numZeroes)
 				numString = "0" + numString;
 			return numString;
 		}
 
-		internal static function parseTypeAndLevel ( supportedType:String, level:uint ):int
-		{
-			switch (supportedType)
-			{
+		internal static function parseTypeAndLevel ( supportedType:String, level:uint ):int {
+			switch (supportedType) {
 				case "Error":
 				case "ErrorEvent":
 					return 3;
@@ -350,13 +306,11 @@ package no.olog
 			}
 		}
 
-		internal static function getLevelColorAsUint ( level:uint ):uint
-		{
+		internal static function getLevelColorAsUint ( level:uint ):uint {
 			return uint( "0x" + String( Oplist.TEXT_COLORS_HEX[level] ).substr( 1 ) );
 		}
 
-		internal static function getDescriptionOf ( o:Object, limitProperties:Array = null ):String
-		{
+		internal static function getDescriptionOf ( o:Object, limitProperties:Array = null ):String {
 			var newLine:String = "\n" + Oplist.LINE_START_TABS;
 			var separator:String = newLine + Ocore.colorTextLevel( "-", 0 );
 			var result:String = "";
@@ -385,8 +339,7 @@ package no.olog
 			var baseList:XMLList = d.extendsClass;
 			var heritage:String = "";
 			var numClasses:int = baseList.length();
-			for (var curClass:int = 0; curClass < numClasses; curClass++)
-			{
+			for (var curClass:int = 0; curClass < numClasses; curClass++) {
 				heritage += extractClassNameFromPackage( baseList[curClass].@type );
 				if (curClass < numClasses - 1)
 					heritage += "-";
@@ -397,27 +350,25 @@ package no.olog
 			var parsedVars:Dictionary = new Dictionary( true );
 
 			var varList:XMLList = d.variable;
+			var accessorList:XMLList = d.accessor.(@access == "readwrite" || @access == "readonly");
+			if (varList.length() > 0) varList.appendChild( accessorList );
+			else varList = accessorList;
 			var variables:String = "";
 			var numParsedVars:int = varList.length();
 			var varsTotal:int = varList.length();
 			var varName:String;
-			for (var curVar:int = 0; curVar < numParsedVars; curVar++)
-			{
+			for (var curVar:int = 0; curVar < numParsedVars; curVar++) {
 				var v:XML = varList[curVar];
 				varName = v.@name;
-				if (!limitProperties || limitProperties.indexOf( varName ) != -1)
-				{
+				if (!limitProperties || limitProperties.indexOf( varName ) != -1) {
 					parsedVars[v.@name] = { name:v.@name, type:v.@type };
 				}
 			}
 
-			for (var p:String in o)
-			{
-				if (!parsedVars[p])
-				{
+			for (var p:String in o) {
+				if (!parsedVars[p]) {
 					varsTotal++;
-					if (!limitProperties || limitProperties.indexOf( p ) != -1)
-					{
+					if (!limitProperties || limitProperties.indexOf( p ) != -1) {
 						var className:String = getQualifiedClassName( o[p] );
 						parsedVars[p] = { name:p, type:className };
 						numParsedVars++;
@@ -425,18 +376,8 @@ package no.olog
 				}
 			}
 
-			for each (var item:Object in parsedVars)
-			{
-				var instanceName:String;
-				if (o.hasOwnProperty( "name" ) && o.name != null)
-				{
-					instanceName = " (" + o[item.name].name + ")";
-				}
-				else
-				{
-					instanceName = "";
-				}
-				variables += newLine + "var " + item.name + Ocore.colorTextLevel( ":" + extractClassNameFromPackage( item.type ), 0 ) + "\t= " + o[item.name] + instanceName;
+			for each (var item:Object in parsedVars) {
+				variables += newLine + "var " + item.name + Ocore.colorTextLevel( ":" + extractClassNameFromPackage( item.type ), 0 ) + "\t= " + o[item.name];
 			}
 
 			if (numParsedVars > 0)
@@ -445,8 +386,7 @@ package no.olog
 			var constList:XMLList = d.constant;
 			var constants:String = "";
 			var numConst:int = constList.length();
-			for (var curConst:int = 0; curConst < numConst; curConst++)
-			{
+			for (var curConst:int = 0; curConst < numConst; curConst++) {
 				varsTotal++;
 				var c:XML = constList[curConst];
 				if (!limitProperties || limitProperties.indexOf( String( c.@name ) ) != -1)
@@ -460,8 +400,7 @@ package no.olog
 			return result;
 		}
 
-		internal static function getLineStart ( index:int, timestamp:String, runtime:String ):String
-		{
+		internal static function getLineStart ( index:int, timestamp:String, runtime:String ):String {
 			if (!Oplist.enableTimeStamp && !Oplist.enableLineNumbers && !Oplist.enableRunTime)
 				return "";
 			var result:String = "[";
@@ -475,43 +414,66 @@ package no.olog
 			return result;
 		}
 
-		internal static function regularTrace ( oline:Oline ):void
-		{
-			var lStart:String = (oline.useLineStart) ? getLineStart( oline.index, oline.timestamp, oline.runtime ) : "";
-			var levelString:String = Oplist.LEVEL_STRINGS[oline.level];
-			var repeatCount:String = (oline.repeatCount == 1) ? "" : " (" + oline.repeatCount + ")";
-			var msg:String = oline.msg.replace( /<\/?.+?>/gi, "" ).replace( /\t/g, " " );
-			trace( lStart + levelString + msg + repeatCount + Oplist.ORIGIN_DELIMITER_TXT + oline.origin );
-		}
-
-		internal static function stopMemoryUsageUpdater ():void
-		{
-			if (_memUsageUpdater)
-			{
+		internal static function stopMemoryUsageUpdater ():void {
+			if (_memUsageUpdater) {
 				_memUsageUpdater.stop();
 				_memUsageUpdater.removeEventListener( TimerEvent.TIMER, _updateMemoryUsage );
 				_memUsageUpdater = null;
 			}
 		}
 
-		internal static function startMemoryUsageUpdater ():void
-		{
-			if (Oplist.showMemoryUsage && !_memUsageUpdater)
-			{
+		internal static function startMemoryUsageUpdater ():void {
+			if (Oplist.showMemoryUsage && !_memUsageUpdater) {
 				_memUsageUpdater = new Timer( 1000 );
 				_memUsageUpdater.addEventListener( TimerEvent.TIMER, _updateMemoryUsage );
 				_memUsageUpdater.start();
 			}
 		}
 
-		private static function _updateMemoryUsage ( e:TimerEvent ):void
-		{
-			Owindow.displayMemoryUsage( Number( (System.totalMemory * 0.000000954).toFixed( 1 ) ) );
+		internal static function isPrimitive ( value:* ):Boolean {
+			return value is String || value is Number || value is int || value is uint;
 		}
 
-		internal static function isPrimitive ( value:* ) : Boolean
-		{
-			return value is String || value is Number || value is int || value is uint;
+		internal static function breakPoint ( ...args ):void {
+			var level:uint = Oplist.MARKER_COLOR_INDEX;
+			var msg:String = "Breakpoint reached: " + getCallee( 7 );
+			var numArgs:int = args.length;
+			if (numArgs == 0) {
+				Ocore.trace( msg, level );
+			}
+			else if (numArgs == 1) {
+				if (isPrimitive( args[0] )) {
+					msg += ", " + parseMsgType( args[i] );
+					Ocore.trace( msg, level );
+				}
+				else {
+					Ocore.trace( msg, level );
+					Ocore.describe( args[0], level );
+				}
+			}
+			else {
+				var restArgsAllStrings:Boolean = true;
+				for (var restArgIndex:int = 1; restArgIndex < numArgs; restArgIndex++) {
+					if (!(args[restArgIndex] is String)) {
+						restArgsAllStrings = false;
+						break;
+					}
+				}
+				if (!isPrimitive( args[0] ) && restArgsAllStrings) {
+					Ocore.trace( msg, level );
+					Ocore.describe( args[0], level, null, args.slice( 1 ) );
+				}
+				else {
+					for (var i:int = 0; i < numArgs; i++) {
+						msg += ", " + parseMsgType( args[i] );
+					}
+					Ocore.trace( msg, level );
+				}
+			}
+		}
+
+		private static function _updateMemoryUsage ( e:TimerEvent ):void {
+			Owindow.displayMemoryUsage( Number( (System.totalMemory * 0.000000954).toFixed( 1 ) ) );
 		}
 	}
 }
