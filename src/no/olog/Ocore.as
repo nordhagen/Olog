@@ -1,4 +1,6 @@
 package no.olog {
+	import no.olog.logtargets.ILogTarget;
+	import no.olog.utilfunctions.getCallee;
 	import flash.display.DisplayObjectContainer;
 	import flash.display.InteractiveObject;
 	import flash.display.Stage;
@@ -8,7 +10,6 @@ package no.olog {
 	import flash.events.MouseEvent;
 	import flash.events.SecurityErrorEvent;
 	import flash.events.TextEvent;
-	import flash.external.ExternalInterface;
 	import flash.net.FileReference;
 	import flash.net.URLLoader;
 	import flash.net.URLRequest;
@@ -48,6 +49,7 @@ package no.olog {
 		private static var _keyBindings:Dictionary;
 		private static var _keyReleaseTimeout:uint;
 		private static var _keySequence:String = "";
+		private static var _logTargets:Array;
 
 		public function Ocore ():void {
 		}
@@ -65,7 +67,8 @@ package no.olog {
 		}
 
 		internal static function getLogCSS ():StyleSheet {
-			var p:Object = { fontFamily:Oplist.FONT, fontSize:Oplist.SIZE, leading:Oplist.LEADING };
+			var size:uint = (Capabilities.os.toLowerCase().indexOf( "win" ) == -1) ? Oplist.SIZE_MAC : Oplist.SIZE_WIN;
+			var p:Object = { fontFamily:Oplist.FONT, fontSize:size, leading:Oplist.LEADING };
 			var a:Object = { textDecoration:"underline", color:Oplist.TEXT_COLORS_HEX[1] };
 			var css:StyleSheet = new StyleSheet();
 			css.setStyle( "p", p );
@@ -87,8 +90,8 @@ package no.olog {
 		}
 
 		internal static function onAddedToStage ( e:Event ):void {
-			originalParent = Owindow.instance.parent;
 			Owindow.exists = true;
+			originalParent = Owindow.instance.parent;
 			_stage = e.target.stage;
 			_stage.addChild( Owindow.instance );
 			if (_stage.loaderInfo.hasOwnProperty( "uncaughtErrorEvents" )) {
@@ -100,8 +103,7 @@ package no.olog {
 			evalAlwaysOnTop();
 			enableScrolling();
 			Owindow.setDefaultBounds();
-			if (_lines.length > 0)
-				refreshLog();
+			if (_lines.length > 0) refreshLog();
 		}
 
 		private static function _evalKeyboard ():void {
@@ -123,58 +125,41 @@ package no.olog {
 		internal static function trace ( message:Object, level:uint = 1, origin:Object = null, useLineStart:Boolean = true, bypassValidation:Boolean = false ):void {
 			var c:String = Otils.getClassName( message );
 
-			if (c == Oplist.OLOG_EVENT) {
-				_handleLogEvent( message, c );
-			} else {
-				var m:String;
-				var s:String;
-				var l:int;
-				var isTruncated:Boolean;
-				if (!bypassValidation) {
-					m = Otils.parseMsgType( message );
-					s = Otils.getClassName( message, true );
-					l = Otils.parseTypeAndLevel( s, level );
-					isTruncated = _evalTruncation( m );
-				} else {
-					m = String( message );
-					s = "String";
-					l = level;
-				}
-
-				var o:String = Otils.parseOrigin( origin );
-				var i:int = _getLineIndex();
-				var t:String = _getCurrentTime();
-				var r:String = _getRunTime();
-				var line:Oline = new Oline( m, l, o, t, r, i, c, s, useLineStart, bypassValidation );
-				line.isTruncated = isTruncated;
-				line.truncationEnabled = line.isTruncated;
-				_lines[i] = line;
-				_evalAddOrRepeat( line );
-				_evalAdditionalLogMethods( line );
+			var m:String;
+			var s:String;
+			var l:int;
+			var isTruncated:Boolean;
+			if (!bypassValidation) {
+				m = Otils.parseMsgType( message );
+				s = Otils.getClassName( message, true );
+				l = Otils.parseTypeAndLevel( s, level );
+				isTruncated = _evalTruncation( m );
 			}
+			else {
+				m = String( message );
+				s = "String";
+				l = level;
+			}
+
+			var o:String = Otils.parseOrigin( origin );
+			var i:int = _getLineIndex();
+			var t:String = _getCurrentTime();
+			var r:String = _getRunTime();
+			var line:Oline = new Oline( m, l, o, t, r, i, c, s, useLineStart, bypassValidation );
+			line.isTruncated = isTruncated;
+			line.truncationEnabled = line.isTruncated;
+			_lines[i] = line;
+			_evalAddOrRepeat( line );
+			_sendToTargets( line );
 		}
 
-		private static function _evalAdditionalLogMethods ( line:Oline ):void {
-			if (Oplist.enableRegularTraceOutput)
-				Otils.regularTrace( line );
-
-			if (Oplist.enableJavascriptConsole)
-				_writeToJSConsole( line );
-
-			if (Oplist.dispatchOlogOutEvents)
-				_dispatchOline( line );
-		}
-
-		private static function _writeToJSConsole ( line:Oline ):void {
-			switch (line.level) {
-				case 2:
-					ExternalInterface.call( "console.warn", line.msg );
-					break;
-				case 3:
-					ExternalInterface.call( "console.error", line.msg );
-					break;
-				default:
-					ExternalInterface.call( "console.log", line.msg );
+		private static function _sendToTargets ( line:Oline ):void {
+			if (_logTargets) {
+				var num:int = _logTargets.length, target:ILogTarget;
+				for (var i:int = 0; i < num; i++) {
+					target = Ocore._logTargets[i];
+					target.writeLogLine( line );
+				}
 			}
 		}
 
@@ -189,32 +174,6 @@ package no.olog {
 			_lastLine.repeatCount++;
 			if (Owindow.exists)
 				Owindow.replaceLastLine( _getLogTextFromVO( _lastLine ) );
-		}
-
-		private static function _handleLogEvent ( e:Object, type:String ):void {
-			var level:int = (type == Oplist.OLOG_EVENT) ? e.level : e.severity;
-
-			switch (e.type) {
-				case OlogEvent.TRACE:
-				case "log":
-					trace( e.message, level, e.target );
-					break;
-				case OlogEvent.DESCRIBE:
-				case "describe":
-					describe( e.message, level, e.target );
-					break;
-				case OlogEvent.HEADER:
-				case "header":
-					writeHeader( e.message, level );
-					break;
-				case OlogEvent.NEWLINE:
-				case "cr":
-					writeNewline( int( e.message ) );
-					break;
-				default:
-					trace( new Error( "Invalid event type for " + type + ":" + e.type ), 3, "Olog" );
-					return;
-			}
 		}
 
 		internal static function traceRuntimeInfo ():void {
@@ -283,7 +242,8 @@ package no.olog {
 			if (!val || val == "") {
 				_password = null;
 				_passwordOk = true;
-			} else if (val != _password) {
+			}
+			else if (val != _password) {
 				_password = val;
 				_passwordOk = false;
 			}
@@ -399,7 +359,8 @@ package no.olog {
 			_versionLoader.addEventListener( SecurityErrorEvent.SECURITY_ERROR, _onVersionHistoryResult );
 			try {
 				_versionLoader.load( new URLRequest( Oplist.VERSION_CHECK_URL ) );
-			} catch (e:Error) {
+			}
+			catch (e:Error) {
 				trace( "Check for updates not allowed by sandbox", 3, "Olog" );
 			}
 		}
@@ -412,7 +373,8 @@ package no.olog {
 					var str:String = Oplist.NEW_VERSION_MSG.replace( "@version", newestVersion );
 					trace( "<p><a href=\"event:" + Oplist.EVENT_VERSION_DETAILS + "\">" + str + "</a></p>", 4, null, true, true );
 					Otils.recordVersionCheckTime();
-				} else {
+				}
+				else {
 					trace( "You are using the current version of Olog", 4 );
 				}
 			}
@@ -469,17 +431,21 @@ package no.olog {
 			var levelKey:int = _charCodeAsLevel( e.charCode, e.keyCode );
 			if (e.shiftKey && e.keyCode == Keyboard.ENTER) {
 				evalOpenClose();
-			} else if (_pwPromptOpen && e.keyCode == Keyboard.ESCAPE) {
+			}
+			else if (_pwPromptOpen && e.keyCode == Keyboard.ESCAPE) {
 				_closePWPrompt();
-			} else if (Owindow.hasFocus() && levelKey > -1) {
+			}
+			else if (Owindow.hasFocus() && levelKey > -1) {
 				_levelFilter = levelKey;
 				_filterLines();
 				refreshLog();
-			} else if (Owindow.hasFocus() && _linesAreFiltered && e.keyCode == Keyboard.ESCAPE) {
+			}
+			else if (Owindow.hasFocus() && _linesAreFiltered && e.keyCode == Keyboard.ESCAPE) {
 				_levelFilter = -1;
 				_filterLines();
 				refreshLog();
-			} else if (_keyBindings) {
+			}
+			else if (_keyBindings) {
 				_evalKeyBinding( e.charCode );
 			}
 		}
@@ -491,7 +457,8 @@ package no.olog {
 				trace( "Key binding \"" + _keySequence + "\" recognized", 5, "Olog" );
 				_keyBindings[_keySequence]();
 				_releaseKeySequence();
-			} else {
+			}
+			else {
 				_keyReleaseTimeout = setTimeout( _releaseKeySequence, 500 );
 			}
 		}
@@ -514,7 +481,8 @@ package no.olog {
 			if (_levelFilter == -1) {
 				_linesFiltered = _lines;
 				_linesAreFiltered = false;
-			} else {
+			}
+			else {
 				_linesAreFiltered = true;
 				var num:int = _lines.length;
 				for (var i:int = 0; i < num; i++) {
@@ -527,12 +495,6 @@ package no.olog {
 
 		private static function _writeLine ( oline:Oline ):void {
 			Owindow.write( _getLogTextFromVO( oline ) );
-		}
-
-		private static function _dispatchOline ( oline:Oline ):void {
-			var e:OlogEvent = new OlogEvent( OlogEvent.OLOG_OUT, oline.msg, oline.level, oline.origin );
-			e.oline = oline;
-			Owindow.instance.dispatchEvent( e );
 		}
 
 		private static function _getLogTextFromVO ( oline:Oline ):String {
@@ -615,7 +577,8 @@ package no.olog {
 					durationString += " (" + overTimeString + ((overTime) ? " above allowed)" : " below allowed)");
 				}
 				trace( marker[0] + " completed in " + durationString, level, marker[2], true, true );
-			} else {
+			}
+			else {
 				trace( "Invalid time marker ID \"" + id + "\"", 3, "Olog" );
 			}
 		}
@@ -658,7 +621,8 @@ package no.olog {
 			var fr:FileReference = new FileReference();
 			try {
 				fr["save"]( contents, Oplist.XML_OUTPUT_FILENAME + "_" + ds + "_" + ts + suff );
-			} catch (e:Error) {
+			}
+			catch (e:Error) {
 				trace( "Save operation requires FlashPlayer 10", 3, "Olog" );
 			}
 		}
@@ -673,9 +637,11 @@ package no.olog {
 		}
 
 		internal static function addKeyBinding ( keySequence:String, callback:Function ):void {
-			if (!_keyBindings) {
+			if (!_keyBindings)
 				_keyBindings = new Dictionary( true );
-			}
+
+			if (_keyBindings[keySequence] != null)
+				Ocore.trace( "Key binding \"" + keySequence + "\" overwrite at " + getCallee( 4 ), 2, "Olog" );
 
 			_keyBindings[keySequence] = callback;
 		}
@@ -685,6 +651,29 @@ package no.olog {
 			Oplist.expandArrayItems = true;
 			Ocore.trace( args, level );
 			Oplist.expandArrayItems = valBefore;
+		}
+
+		internal static function activateLogTargets ( targets:Array ):void {
+			var num:int = targets.length, target:Object;
+			for (var i:int = 0; i < num; i++) {
+				if (targets[i] is Class) {
+					try {
+						target = new targets[i]();
+					}
+					catch (e:Error) {
+						trace( "Error activating log target: " + targets[i] + " constructor failed", 3, "Olog" );
+						continue;
+					}
+				}
+				if (target is ILogTarget) {
+					if (!_logTargets) _logTargets = [];
+					_logTargets.push( target );
+				}
+				else {
+					trace( "Error activating log target: " + targets[i] + " does not implement ILogTarget", 3, "Olog" );
+				}
+				target = null;
+			}
 		}
 	}
 }

@@ -1,4 +1,20 @@
 <versions>
+	<version id="1.3.0">
+		<features>
+			<feature>Added support for custom log targets. These can be activated by Olog.activateTargets(). IMPORTANT: See notes!</feature>
+			<feature>Simplified utility panel</feature>
+			<feature>Added check for updates to utility panel</feature>
+			<feature>Added clear to utility panel to clear all text from log window</feature>
+			<feature>Added data type comparison to assert()</feature>
+			<feature>Added support for getters and setters in Olog.describe()</feature>
+			<feature>Added warning for key binding overrides</feature>
+		</features>
+		<fixes>
+			<fix>Fixed return boolean on assert</fix>
+			<fix>Fixed breakPoint args. Primitive values are appended to the single line log message, one object is displayed with full description and one object followed by all string args will display a description filtered against the property names passed after the first argument.</fix>
+		</fixes>
+		<notes>Log targets replaces the event dispatching functionality of Olog. OlogEvent is removed and you can no longer call addEventListener on Olog. Instead create a custom log target that implements ILogTarget and pass it to Olog.activateTargets()</notes>
+	</version>
 	<version id="1.2.9">
 		<features>
 			<feature>Added enableAssertions as a property on Olog to enable/disable asserts in code</feature>

@@ -1,4 +1,5 @@
 package no.olog.utilfunctions {
+	import flash.utils.getQualifiedClassName;
 	import no.olog.Olog;
 
 	/**
@@ -10,21 +11,40 @@ package no.olog.utilfunctions {
 	 * @param args Any arguments to use when calling actual if actual is a function reference 
 	 */
 	public function assert ( testName:String, expected:*, actual:*, ... args ):Boolean {
-		if (!Olog.enableAssertions) true;
 		var level:uint;
 		var msg:String = "[Test \"" + testName + "\"] ";
 		var location:String = "";
-		var result:* = (actual is Function) ? actual.apply( this, args ) : actual;
-		if (expected === result) {
+		var result:*;
+		if (actual is Function) {
+			actual.apply( this, args );
+		}
+		else if (expected is Class) {
+			expected = getQualifiedClassName( expected );
+			result = getQualifiedClassName( actual );
+		}
+		else if (expected is String && !isNaN( Number( actual ) )) {
+			var expectedAsString:String = String( expected );
+			if (expectedAsString.charAt( 0 ) == "<" && Number( actual ) < Number( expectedAsString.substr( 1 ) ))
+				result = expected;
+			else if (expectedAsString.charAt( 0 ) == ">" && Number( actual ) > Number( expectedAsString.substr( 1 ) ))
+				result = expected;
+			else
+				result = actual;
+		}
+		else {
+			result = actual;
+		}
+		if (result === expected) {
 			msg += "passed";
 			level = 4;
-		} else {
-			msg += "failed, expected " + String( expected ) + " was " + result;
+		}
+		else {
+			msg += "failed, expected " + String( expected ) + " was " + String( result );
 			level = 3;
 			location = getCallee( 3 );
 		}
 
 		Olog.trace( msg, level, location );
-		return result == 4 ? true : false;
+		return level == 4 ? true : false;
 	}
 }
