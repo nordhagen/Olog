@@ -1,21 +1,24 @@
 package no.olog.logtargets {
-	import flash.events.StatusEvent;
 	import no.olog.Oline;
 	import no.olog.Olog;
+	import flash.events.StatusEvent;
 	import flash.net.LocalConnection;
 
 	/**
-	 * Forwards log messages through a LocalConnection at the ID specified by Olog.LOCAL_CONNECTION_ID, to a function called "ologTrace"
 	 * @author Oyvind Nordhagen
-	 * @date 22. jan. 2011
+	 * @date 21. feb. 2011
 	 */
-	public class LocalConnectionTarget implements ILogTarget {
+	public class OlogAppTarget implements ILogTarget {
+		private static const APP_CONNECTION_ID:String = "app#OlogConsole:Olog";
+		private static const FUNCTION_NAME:String = "writeLogLine";
+		public static var applicationName:String = "";
 		private var _conn:LocalConnection;
 		private var _errorReported:Boolean;
 
 		public function writeLogLine ( line:Oline ):void {
+			if (applicationName) line.msg = "[" + applicationName + "] " + line.msg;
 			try {
-				_connection.send( Olog.LOCAL_CONNECTION_ID, "ologTrace", line );
+				_connection.send( APP_CONNECTION_ID, FUNCTION_NAME, line );
 			}
 			catch (e:Error) {
 				Olog.trace( "LocalConnection.send failed: " + e.message, 2, "Olog" );
@@ -28,11 +31,11 @@ package no.olog.logtargets {
 				try {
 					_conn = new LocalConnection();
 					_conn.addEventListener( StatusEvent.STATUS, _statusHandler );
-					Olog.trace( "Broadcasting on " + _conn.domain + ":" + Olog.LOCAL_CONNECTION_ID, 0, "Olog" );
+					Olog.trace( "== Session ==", 6 );
 					return _conn;
 				}
 				catch (error:ArgumentError) {
-					Olog.trace( "No active LocalConnection reciever found at " + _conn.domain + ":" + Olog.LOCAL_CONNECTION_ID, 3, "Olog" );
+					Olog.trace( "No active LocalConnection reciever found at " + APP_CONNECTION_ID, 3, "Olog" );
 				}
 			}
 			return null;
@@ -40,7 +43,7 @@ package no.olog.logtargets {
 
 		private function _statusHandler ( event:StatusEvent ):void {
 			if (event.level == "error" && !_errorReported) {
-				Olog.trace( "LocalConnection.send failed", 3, "Olog" );
+				Olog.trace( "Send to OlogConsole failed", 3, "Olog" );
 				_errorReported = true;
 			}
 		}

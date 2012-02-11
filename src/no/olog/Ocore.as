@@ -35,7 +35,6 @@ package no.olog {
 		private static var _versions:XML;
 		private static var _password:String;
 		private static var _passwordOk:Boolean = true;
-		private static var _enableCMI:Boolean = true;
 		private static var _pwPrompt:OpwPrompt;
 		private static var _stageFocusRestore:InteractiveObject;
 		private static var _pwPromptOpen:Boolean;
@@ -50,9 +49,6 @@ package no.olog {
 		private static var _keyReleaseTimeout:uint;
 		private static var _keySequence:String = "";
 		private static var _logTargets:Array;
-
-		public function Ocore ():void {
-		}
 
 		internal static function colorTextLevel ( text:String, level:int ):String {
 			return "<font color=\"" + Oplist.TEXT_COLORS_HEX[level] + "\">" + text + "</font>";
@@ -74,6 +70,19 @@ package no.olog {
 			css.setStyle( "p", p );
 			css.setStyle( "a", a );
 			return css;
+		}
+
+		internal static function solo ( ...origins ):void {
+			if (origins && origins.length > 0) {
+				var num:int = origins.length;
+				for (var i:int = 0; i < num; i++) {
+					origins[i] = Otils.parseOrigin( origins[i] );
+				}
+				Oplist.solo = origins;
+			}
+			else {
+				Oplist.solo = null;
+			}
 		}
 
 		internal static function getTitleBarCSS ():StyleSheet {
@@ -100,7 +109,6 @@ package no.olog {
 			_evalKeyboard();
 			_evalCMI();
 			_initPWPrompt();
-			evalAlwaysOnTop();
 			enableScrolling();
 			Owindow.setDefaultBounds();
 			if (_lines.length > 0) refreshLog();
@@ -113,39 +121,36 @@ package no.olog {
 				_stage.removeEventListener( KeyboardEvent.KEY_DOWN, _onKeyDown );
 		}
 
-		internal static function evalAlwaysOnTop ():void {
-			if (_stage) {
-				if (Oplist.alwaysOnTop)
-					_stage.addEventListener( Event.ADDED, Owindow.moveToTop );
-				else
-					_stage.removeEventListener( Event.ADDED, Owindow.moveToTop );
-			}
-		}
-
 		internal static function trace ( message:Object, level:uint = 1, origin:Object = null, useLineStart:Boolean = true, bypassValidation:Boolean = false ):void {
-			var c:String = Otils.getClassName( message );
-
-			var m:String;
-			var s:String;
-			var l:int;
-			var isTruncated:Boolean;
-			if (!bypassValidation) {
-				m = Otils.parseMsgType( message );
-				s = Otils.getClassName( message, true );
-				l = Otils.parseTypeAndLevel( s, level );
-				isTruncated = _evalTruncation( m );
+			var line:Oline;
+			if (message is Oline) {
+				line = message as Oline;
 			}
 			else {
-				m = String( message );
-				s = "String";
-				l = level;
+				var c:String = Otils.getClassName( message );
+				var m:String;
+				var s:String;
+				var l:int;
+				var isTruncated:Boolean;
+				if (!bypassValidation) {
+					m = Otils.parseMsgType( message );
+					s = Otils.getClassName( message, true );
+					l = Otils.parseTypeAndLevel( s, level );
+					isTruncated = _evalTruncation( m );
+				}
+				else {
+					m = String( message );
+					s = "String";
+					l = level;
+				}
+
+				var o:String = Otils.parseOrigin( origin );
+				var i:int = _getLineIndex();
+				var t:String = _getCurrentTime();
+				var r:String = _getRunTime();
+				line = new Oline( m, l, o, t, r, i, c, s, useLineStart, bypassValidation );
 			}
 
-			var o:String = Otils.parseOrigin( origin );
-			var i:int = _getLineIndex();
-			var t:String = _getCurrentTime();
-			var r:String = _getRunTime();
-			var line:Oline = new Oline( m, l, o, t, r, i, c, s, useLineStart, bypassValidation );
 			line.isTruncated = isTruncated;
 			line.truncationEnabled = line.isTruncated;
 			_lines[i] = line;
@@ -206,7 +211,7 @@ package no.olog {
 		}
 
 		internal static function describe ( message:Object, level:int = 1, origin:Object = null, limitProperties:Array = null ):void {
-			var m:String = Otils.getDescriptionOf( message, limitProperties );
+			var m:String = Otils.getDescriptionOf( message, limitProperties, level );
 			trace( m, level, origin, true, true );
 		}
 
@@ -224,18 +229,11 @@ package no.olog {
 
 		private static function _addLine ( line:Oline ):void {
 			_lastLine = line;
-			_filter( line );
 
 			if (Owindow.exists && Owindow.isOpen)
 				_writeLine( line );
 			else
 				_numLinesPendingWrite++;
-		}
-
-		private static function _filter ( line:Oline ):void {
-			if (!_linesAreFiltered || line.level == _levelFilter) {
-				_linesFiltered.push( line );
-			}
 		}
 
 		internal static function setPassword ( val:String ):void {
@@ -254,24 +252,20 @@ package no.olog {
 		}
 
 		internal static function setCMI ( val:Boolean ):void {
-			_enableCMI = val;
+			Oplist.contextMenuItem = val;
 			_evalCMI();
-		}
-
-		internal static function get hasCMI ():Boolean {
-			return _enableCMI;
 		}
 
 		internal static function evalOpenClose ( e:Event = null ):void {
 			if (!Owindow.isOpen && _passwordOk)
-				_openWindow();
+				openWindow();
 			else if (Owindow.isOpen)
 				Owindow.close();
 			else if (!_pwPromptOpen && !_passwordOk)
 				_openPWPrompt();
 		}
 
-		private static function _openWindow ():void {
+		internal static function openWindow ():void {
 			Owindow.open();
 			_writePendingLines();
 		}
@@ -345,7 +339,7 @@ package no.olog {
 
 		private static function _evalCMI ():void {
 			if (Owindow.exists && Capabilities.playerType != "Desktop") {
-				if (_enableCMI)
+				if (Oplist.contextMenuItem)
 					Owindow.createCMI();
 				else
 					Owindow.removeCMI();
@@ -359,8 +353,7 @@ package no.olog {
 			_versionLoader.addEventListener( SecurityErrorEvent.SECURITY_ERROR, _onVersionHistoryResult );
 			try {
 				_versionLoader.load( new URLRequest( Oplist.VERSION_CHECK_URL ) );
-			}
-			catch (e:Error) {
+			} catch (e:Error) {
 				trace( "Check for updates not allowed by sandbox", 3, "Olog" );
 			}
 		}
@@ -484,17 +477,30 @@ package no.olog {
 			}
 			else {
 				_linesAreFiltered = true;
-				var num:int = _lines.length;
+				var num:int = _lines.length, line:Oline;
 				for (var i:int = 0; i < num; i++) {
-					if (_lines[i].level == _levelFilter) {
-						_linesFiltered.push( _lines[i] );
+					line = _lines[i];
+					if (_filter( line )) {
+						_linesFiltered.push( line );
 					}
 				}
 			}
 		}
 
+		private static function _filter ( line:Oline ):Boolean {
+			return _levelAllowed( line.level ) && _originAllowed( line.origin );
+		}
+
+		private static function _originAllowed ( origin:String ):Boolean {
+			return !Oplist.solo || Oplist.solo.indexOf( origin ) != -1;
+		}
+
+		private static function _levelAllowed ( level:uint ):Boolean {
+			return !_linesAreFiltered || level == _levelFilter;
+		}
+
 		private static function _writeLine ( oline:Oline ):void {
-			Owindow.write( _getLogTextFromVO( oline ) );
+			if (_filter( oline )) Owindow.write( _getLogTextFromVO( oline ) );
 		}
 
 		private static function _getLogTextFromVO ( oline:Oline ):String {
@@ -511,7 +517,7 @@ package no.olog {
 			}
 			var msg:String = colorTextLevel( rawText, oline.level );
 			var origin:String = _getOrigin( oline.origin );
-			return lStart + msg + repeatCount + origin;
+			return Oplist.originBeforeMessage ? lStart + origin + msg + repeatCount : lStart + msg + repeatCount + origin;
 		}
 
 		private static function _expandColorStrings ( rawText:String ):String {
@@ -541,7 +547,15 @@ package no.olog {
 		}
 
 		private static function _getOrigin ( origin:String ):String {
-			return (origin) ? colorTextLevel( Oplist.ORIGIN_DELIMITER + origin, 0 ) : "";
+			if (!origin) {
+				return "";
+			}
+			else if (Oplist.originBeforeMessage) {
+				return colorTextLevel( origin + Oplist.ORIGIN_DELIMITER, 0 );
+			}
+			else {
+				return colorTextLevel( Oplist.ORIGIN_DELIMITER + origin, 0 );
+			}
 		}
 
 		private static function _getCurrentTime ():String {
@@ -621,8 +635,7 @@ package no.olog {
 			var fr:FileReference = new FileReference();
 			try {
 				fr["save"]( contents, Oplist.XML_OUTPUT_FILENAME + "_" + ds + "_" + ts + suff );
-			}
-			catch (e:Error) {
+			} catch (e:Error) {
 				trace( "Save operation requires FlashPlayer 10", 3, "Olog" );
 			}
 		}
@@ -659,8 +672,7 @@ package no.olog {
 				if (targets[i] is Class) {
 					try {
 						target = new targets[i]();
-					}
-					catch (e:Error) {
+					} catch (e:Error) {
 						trace( "Error activating log target: " + targets[i] + " constructor failed", 3, "Olog" );
 						continue;
 					}
@@ -674,6 +686,10 @@ package no.olog {
 				}
 				target = null;
 			}
+		}
+
+		internal static function printSOContents ():void {
+			trace( Otils.getWindowStateString() );
 		}
 	}
 }

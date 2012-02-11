@@ -43,6 +43,8 @@
 		private static var _prefPane:OprefPane;
 		private static var _prefPaneOpen:Boolean;
 		private static var _lastUnreadColorIndex:int = 0;
+		private static var _draggable:Boolean;
+		private static var _cmiTarget:DisplayObjectContainer;
 
 		public function Owindow () {
 			_init();
@@ -59,6 +61,7 @@
 			_initDragger();
 			filters = [ new DropShadowFilter( 2, 45, 0, 0.3, 10, 10 ) ];
 			addEventListener( Event.ADDED_TO_STAGE, Ocore.onAddedToStage );
+			draggable = true;
 		}
 
 		private function _initMemUsageField ():void {
@@ -104,6 +107,30 @@
 			return _i;
 		}
 
+		internal static function get resizable ():Boolean {
+			return _dragger.visible;
+		}
+
+		internal static function set resizable ( val:Boolean ):void {
+			_dragger.visible = val;
+		}
+
+		internal static function get draggable ():Boolean {
+			return _draggable;
+		}
+
+		internal static function set draggable ( val:Boolean ):void {
+			_draggable = val;
+			if (_draggable) {
+				_titleBarBg.addEventListener( MouseEvent.MOUSE_DOWN, _onTitleBarDown );
+				_titleBarBg.addEventListener( MouseEvent.MOUSE_UP, _onTitleBarUp );
+			}
+			else {
+				_titleBarBg.removeEventListener( MouseEvent.MOUSE_DOWN, _onTitleBarDown );
+				_titleBarBg.removeEventListener( MouseEvent.MOUSE_UP, _onTitleBarUp );
+			}
+		}
+
 		internal static function getLogText ():String {
 			return _field.text;
 		}
@@ -119,6 +146,7 @@
 		internal static function open ( e:Event = null ):void {
 			_i.visible = true;
 			_updateCMI();
+			if (_i.stage && Oplist.alwaysOnTop) _i.stage.addEventListener( Event.ADDED, moveToTop );
 			Otils.recordWindowState();
 			Otils.startMemoryUsageUpdater();
 		}
@@ -132,6 +160,7 @@
 		internal static function close ( e:Event = null ):void {
 			_i.visible = false;
 			_updateCMI();
+			if (_i.stage && Oplist.alwaysOnTop) _i.stage.removeEventListener( Event.ADDED, moveToTop );
 			Otils.recordWindowState();
 			Otils.stopMemoryUsageUpdater();
 		}
@@ -170,33 +199,31 @@
 		}
 
 		internal static function createCMI ():void {
-			if (_cmi ) {
+			if (_cmi || !Oplist.contextMenuItem) {
 				return;
 			}
 
-			var target:DisplayObjectContainer;
 			if (Ocore.originalParent is Stage) {
-				target = Ocore.originalParent.getChildAt( 0 ) as DisplayObjectContainer;
+				_cmiTarget = Ocore.originalParent.getChildAt( 0 ) as DisplayObjectContainer;
 			}
 			else {
-				target = _i.parent;
+				_cmiTarget = _i.parent;
 			}
 
 			try {
 				_cmi = new ContextMenuItem( Oplist.CMI_OPEN_LABEL );
 				_cmi.addEventListener( ContextMenuEvent.MENU_ITEM_SELECT, Ocore.evalOpenClose );
-				target.contextMenu = new ContextMenu();
-				target.contextMenu["customItems"].push( _cmi );
-			}
-			catch(error:Error) {
+				_cmiTarget.contextMenu = new ContextMenu();
+				_cmiTarget.contextMenu["customItems"].push( _cmi );
+			} catch(error:Error) {
 				Ocore.trace( "Unable to create context menu item", 1, "Olog" );
 			}
 		}
 
 		internal static function removeCMI ():void {
-			if (!_cmi)
+			if (!_cmi || !_cmiTarget.contextMenu)
 				return;
-			var cmis:Array = _i.stage.contextMenu["customItems"];
+			var cmis:Array = _cmiTarget.contextMenu["customItems"];
 			var num:int = cmis.length;
 			for (var i:int = 0; i < num; i++) {
 				if (cmis[i] == _cmi) {
@@ -205,7 +232,8 @@
 				}
 			}
 			_cmi = null;
-			_i.stage.contextMenu = null;
+			_cmiTarget.contextMenu = null;
+			_cmiTarget = null;
 		}
 
 		internal static function clear ():void {
@@ -267,8 +295,6 @@
 			_titleBarBg = new Sprite();
 			_drawTitleBarBg( w );
 			_titleBarBg.doubleClickEnabled = true;
-			_titleBarBg.addEventListener( MouseEvent.MOUSE_DOWN, _onTitleBarDown );
-			_titleBarBg.addEventListener( MouseEvent.MOUSE_UP, _onTitleBarUp );
 			_titleBarBg.addEventListener( MouseEvent.DOUBLE_CLICK, _onMinimizeClick );
 			addChild( _titleBarBg );
 			_titleBarField = new TextField();
@@ -286,7 +312,7 @@
 
 			// CLOSE BUTTON
 			_closeBtn = _getTitleBarButton();
-			g = Owindow._closeBtn.graphics;
+			g = _closeBtn.graphics;
 			g.lineStyle( 2, 0xffffff );
 			g.moveTo( bSize * -0.15, bSize * -0.15 );
 			g.lineTo( bSize * 0.15, bSize * 0.15 );
@@ -488,13 +514,13 @@
 			addChild( _dragger );
 		}
 
-		private function _onTitleBarDown ( e:MouseEvent ):void {
-			stage.addEventListener( MouseEvent.MOUSE_UP, _onTitleBarUp );
+		private static function _onTitleBarDown ( e:MouseEvent ):void {
+			_i.stage.addEventListener( MouseEvent.MOUSE_UP, _onTitleBarUp );
 			_i.startDrag();
 		}
 
-		private function _onTitleBarUp ( e:MouseEvent ):void {
-			stage.removeEventListener( MouseEvent.MOUSE_UP, _onTitleBarUp );
+		private static function _onTitleBarUp ( e:MouseEvent ):void {
+			_i.stage.removeEventListener( MouseEvent.MOUSE_UP, _onTitleBarUp );
 			_i.stopDrag();
 			Otils.recordWindowState();
 		}
@@ -575,12 +601,52 @@
 			_resize( b.width, b.height );
 			if (Otils.getSavedMinimizedState())
 				Owindow.minimize();
-			if (Otils.getSavedOpenState())
-				Owindow.open();
+			if (Otils.getSavedOpenState() && !Owindow.isOpen)
+				Ocore.openWindow();
 		}
 
-		public static function hasFocus ():Boolean {
+		internal static function hasFocus ():Boolean {
 			return exists && (_i.stage.focus == _i || _i.stage.focus == _field);
+		}
+
+		internal static function dockTop ():void {
+			if (isMinimized) Owindow.unMinimize();
+
+			_i.x = Oplist.PADDING;
+			_i.y = Oplist.PADDING;
+			var w:int = _i.stage.stageWidth - Oplist.PADDING * 2;
+			var h:int = _i.stage.stageHeight * 0.5 - Oplist.PADDING;
+			_resize( w, h );
+		}
+
+		internal static function dockBottom ():void {
+			if (isMinimized) Owindow.unMinimize();
+
+			_i.x = Oplist.PADDING;
+			_i.y = _i.stage.stageHeight * 0.5 - Oplist.PADDING;
+			var w:int = _i.stage.stageWidth - Oplist.PADDING * 2;
+			var h:int = _i.stage.stageHeight * 0.5 - Oplist.PADDING;
+			_resize( w, h );
+		}
+
+		internal static function dockLeft ():void {
+			if (isMinimized) Owindow.unMinimize();
+
+			_i.x = Oplist.PADDING;
+			_i.y = Oplist.PADDING;
+			var w:int = _i.stage.stageWidth * 0.5 - Oplist.PADDING * 2;
+			var h:int = _i.stage.stageHeight - Oplist.PADDING;
+			_resize( w, h );
+		}
+
+		internal static function dockRight ():void {
+			if (isMinimized) Owindow.unMinimize();
+
+			_i.x = _i.stage.stageWidth * 0.5 - Oplist.PADDING;
+			_i.y = Oplist.PADDING;
+			var w:int = _i.stage.stageWidth * 0.5 - Oplist.PADDING * 2;
+			var h:int = _i.stage.stageHeight - Oplist.PADDING;
+			_resize( w, h );
 		}
 	}
 }

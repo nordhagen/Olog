@@ -16,7 +16,7 @@ package no.olog.utilfunctions {
 		var location:String = "";
 		var result:*;
 		if (actual is Function) {
-			actual.apply( this, args );
+			result = actual.apply( null, args );
 		}
 		else if (expected is Class) {
 			expected = getQualifiedClassName( expected );
