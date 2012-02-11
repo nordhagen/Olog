@@ -1,4 +1,16 @@
 <versions>
+	<version id="1.3.1">
+		<features>
+			<feature>Added option originBeforeMessage to enable the format [origin] message instead of the default format message › origin</feature>
+			<feature>Added shorthand functions for debug, info, warn, error and success allowing for comma seperated logging</feature>
+			<feature>Added shorthand function for describe, a very useful feature for debugging backend and API calls</feature>
+		</features>
+		<fixes>
+			<fix>Fixed issue with describe attempting to append children to an XMLList</fix>
+			<fix>Fixed severity coloring on OlogDescribe</fix>
+			<fix>Performance improvements</fix>
+		</fixes>
+	</version>
 	<version id="1.3.0">
 		<features>
 			<feature>Added support for custom log targets. These can be activated by Olog.activateTargets(). IMPORTANT: See notes!</feature>

@@ -46,7 +46,8 @@ package no.olog {
 			_menu += "<a href=\"event:saveXml\">Save as XML</a>" + DELIMITER;
 			_menu += "<a href=\"event:saveText\">Save as Text</a>" + DELIMITER;
 			_menu += "<a href=\"event:updateCheck\">Check for update</a>" + DELIMITER;
-			_menu += "<a href=\"event:clear\">Clear</a>";
+			_menu += "<a href=\"event:clear\">Clear</a>" + DELIMITER;
+			_menu += "<a href=\"event:printSO\">Show saved window state</a>";
 			_menu += "</menu>";
 
 			_field.htmlText = _menu;
@@ -63,6 +64,9 @@ package no.olog {
 					break;
 				case "clear":
 					Owindow.clear();
+					break;
+				case "printSO":
+					Ocore.printSOContents();
 					break;
 				case "updateCheck":
 					Ocore.checkForUpdates();

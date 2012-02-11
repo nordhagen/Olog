@@ -22,6 +22,9 @@ package no.olog {
 		internal static var colorizeColorStrings:Boolean = true;
 		internal static var expandArrayItems:Boolean = false;
 		internal static var dispatchOlogOutEvents:Boolean = false;
+		internal static var originBeforeMessage:Boolean = false;
+		internal static var solo:Array;
+		internal static var contextMenuItem:Boolean = true;
 		
 		// Defaults bounds
 		internal static const DEFAULT_WIDTH:int = 400;
@@ -84,11 +87,10 @@ package no.olog {
 		internal static const SIZE_MAC:uint = 10;
 		internal static const SIZE_WIN:uint = 11;
 		internal static const LEADING:int = 1;
-		// 0-Info	  1-Debug	 2-Warning	3-Error	   4-Success  5-Event	 6-(Spare)	7-(Spare)  8-(Spare)  9-Marker
-		internal static const LEVEL_STRINGS:Array = [ "[info] ", "[debug] ", "[* warning] ", "[** error] ", "[success] ", "[event] ", "", "", "", "[marker] " ];
-		internal static const TEXT_COLORS_HEX:Array = [ "#9AB28E", "#ffffff", "#ffcc00", "#FF7F7F", "#42d73b", "#4CDBFF", "#ffffff", "#ffffff", "#ffffff", "#00ffff" ];
-		internal static const TEXT_COLORS_UINT:Array = [ 0x9AB28E, 0xffffff, 0xffcc00, 0xFF7F7F, 0x42d73b, 0x4CDBFF, 0xffffff, 0xffffff, 0xffffff, 0x00ffff ];
-		internal static const TEXT_COLOR_LAST_INDEX:int = 5;
+		// 0-Info	  1-Debug	 2-Warning	3-Error	   4-Success  5-Event	 6-Session	7-(todo)  8-(Spare)  9-Marker
+		internal static const LEVEL_STRINGS:Array = [ "[info] ", "[debug] ", "[warning] ", "[error] ", "[success] ", "[event] ", "[session]", "[todo]", "", "[marker] " ];
+		internal static const TEXT_COLORS_HEX:Array = [ "#9AB28E", "#ffffff", "#ffcc00", "#FF7F7F", "#42d73b", "#4CDBFF", "#ff00ff", "#ff8100", "#ffffff", "#00ffff" ];
+		internal static const TEXT_COLORS_UINT:Array = [ 0x9AB28E, 0xffffff, 0xffcc00, 0xFF7F7F, 0x42d73b, 0x4CDBFF, 0xff00ff, 0xff8100, 0xffffff, 0x00ffff ];
 		internal static const TEXT_COLOR_LAST_ERROR_INDEX:int = 3;
 		internal static const MARKER_COLOR_INDEX:int = 9;
 		internal static const TAB_STOPS:Array = [ 10, 250, 300, 400, 500, 600, 700 ];

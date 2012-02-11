@@ -65,6 +65,8 @@ package no.olog {
 					if (message.target != message.currentTarget)
 						result += " (via " + getClassName( message.currentTarget ) + ")";
 					break;
+				case "NetStatusEvent":
+					result = "NetStatusEvent." + message.type.toUpperCase() + ": " + message.info.code;
 				case "Event":
 					result = className + "." + _styleEventType( message.type );
 					if (message.target)
@@ -81,7 +83,7 @@ package no.olog {
 				default:
 					result = String( message );
 			}
-			
+
 			return result.replace( /</g, "&lt;" ).replace( /\>/g, "&gt;" ) || result;
 		}
 
@@ -97,7 +99,7 @@ package no.olog {
 						result += parseMsgType( message [i] );
 						if (i < num - 1) {
 							result += ", ";
-						}						
+						}
 					}
 				}
 
@@ -138,9 +140,17 @@ package no.olog {
 			return result;
 		}
 
-		internal static function parseOrigin ( origin:Object = null ):String {
-			var result:String = (origin is String) ? String( origin ) : getClassName( origin );
-			return (result != "null") ? result : "";
+		internal static function parseOrigin ( origin:Object ):String {
+			if (!origin) {
+				return "";
+			}
+			else if (origin is String) {
+				return String( origin );
+			}
+			else {
+				var toString:String = String( origin );
+				return toString.substring( toString.indexOf( " " ) + 1, toString.indexOf( "]" ) );
+			}
 		}
 
 		internal static function getClassName ( o:Object, supported:Boolean = false ):String {
@@ -195,7 +205,7 @@ package no.olog {
 		}
 
 		internal static function validateLevel ( level:int ):int {
-			return Math.min( Math.max( level, 0 ), Oplist.TEXT_COLOR_LAST_INDEX );
+			return Math.min( Math.max( level, 0 ), Oplist.TEXT_COLORS_UINT.length - 1 );
 		}
 
 		internal static function getDefaultWindowBounds ():Rectangle {
@@ -260,6 +270,19 @@ package no.olog {
 			_savePersistentData();
 		}
 
+		internal static function getWindowStateString ():String {
+			if (!_so)
+				_so = SharedObject.getLocal( "OlogSettings" );
+				
+			var result:String = "Saved window state:\n";
+			result += "\n\tPosition: " + _so.data.x + " x " + _so.data.y;
+			result += "\n\tSize: " + _so.data.width + " x " + _so.data.height;
+			result += "\n\tMinimized: " + _so.data.isMinimized;
+			result += "\n\tOpen: " + _so.data.isOpen;
+			result += "\n\tShow memory usage: " + _so.data.showMemoryUsage;
+			return result;
+		}
+
 		internal static function recordVersionCheckTime ():void {
 			if (!_so)
 				_so = SharedObject.getLocal( "OlogSettings" );
@@ -271,8 +294,7 @@ package no.olog {
 			var flushStatus:String = null;
 			try {
 				flushStatus = _so.flush();
-			}
-			catch (e:Error) {
+			} catch (e:Error) {
 				Olog.trace( e );
 			}
 		}
@@ -310,7 +332,8 @@ package no.olog {
 			return uint( "0x" + String( Oplist.TEXT_COLORS_HEX[level] ).substr( 1 ) );
 		}
 
-		internal static function getDescriptionOf ( o:Object, limitProperties:Array = null ):String {
+		internal static function getDescriptionOf ( o:Object, limitProperties:Array = null, level:uint = 1 ):String {
+			if (!o) return "null";
 			var newLine:String = "\n" + Oplist.LINE_START_TABS;
 			var separator:String = newLine + Ocore.colorTextLevel( "-", 0 );
 			var result:String = "";
@@ -318,11 +341,11 @@ package no.olog {
 			var d:XML = describeType( o );
 			var type:String = getClassName( o );
 			var propsArr:Array = new Array();
-			if (d.@isDynamic)
+			if (d.@isDynamic == "true")
 				propsArr.push( "dynamic" );
-			if (d.@isStatic)
+			if (d.@isStatic == "true")
 				propsArr.push( "static" );
-			if (d.@isFinal)
+			if (d.@isFinal == "true")
 				propsArr.push( "final" );
 			var objectName:String;
 
@@ -331,10 +354,10 @@ package no.olog {
 			else
 				objectName = "";
 
-			result += Ocore.colorTextLevel( "Description of " + type + objectName, 1 );
+			result += Ocore.colorTextLevel( "Description of " + type + objectName, level );
 
 			if (propsArr.length > 0)
-				result += Ocore.colorTextLevel( " (" + propsArr.join( ", " ) + ")", 0 );
+				result += Ocore.colorTextLevel( " (" + propsArr.join( ", " ) + ")", level );
 
 			var baseList:XMLList = d.extendsClass;
 			var heritage:String = "";
@@ -342,16 +365,16 @@ package no.olog {
 			for (var curClass:int = 0; curClass < numClasses; curClass++) {
 				heritage += extractClassNameFromPackage( baseList[curClass].@type );
 				if (curClass < numClasses - 1)
-					heritage += "-";
+					heritage += " > ";
 			}
 
-			result += newLine + newLine + Ocore.colorTextLevel( "Inheritance tree: " + heritage, 0 );
+			result += newLine + ((numClasses) ? newLine + Ocore.colorTextLevel( "Inheritance tree: " + heritage, level ) : "");
 
 			var parsedVars:Dictionary = new Dictionary( true );
 
 			var varList:XMLList = d.variable;
 			var accessorList:XMLList = d.accessor.(@access == "readwrite" || @access == "readonly");
-			if (varList.length() > 0) varList.appendChild( accessorList );
+			if (varList.length() > 0) varList += accessorList;
 			else varList = accessorList;
 			var variables:String = "";
 			var numParsedVars:int = varList.length();
@@ -396,7 +419,7 @@ package no.olog {
 			if (numConst > 0)
 				result += separator + "\n\t" + Ocore.colorTextLevel( constants, 1 );
 
-			result += separator + newLine + Ocore.colorTextLevel( numParsedVars + " value(s) shown of total " + varsTotal + " found", 0 ) + "\n";
+			result += separator + newLine + Ocore.colorTextLevel( numParsedVars + " value(s) shown of total " + varsTotal + " found", level ) + "\n";
 			return result;
 		}
 

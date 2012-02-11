@@ -37,7 +37,7 @@ package no.olog {
 	 * @date 19. feb. 2010
 	 */
 	public class Olog extends Sprite {
-		public static const LOCAL_CONNECTION_ID:String = "no.olog#localConnection";
+		public static const LOCAL_CONNECTION_ID:String = "_olog";
 
 		/**
 		 * Constructor. Do not use. Use addChild(Olog.window) instead.
@@ -368,7 +368,7 @@ package no.olog {
 		 * Toggles the context menu item for opening/closing window on or off
 		 */
 		public static function get contextMenuItem ():Boolean {
-			return Ocore.hasCMI;
+			return Oplist.contextMenuItem;
 		}
 
 		/**
@@ -393,7 +393,6 @@ package no.olog {
 		 */
 		public static function set alwaysOnTop ( val:Boolean ):void {
 			Oplist.alwaysOnTop = val;
-			Ocore.evalAlwaysOnTop();
 		}
 
 		/**
@@ -482,6 +481,58 @@ package no.olog {
 		}
 
 		/**
+		 * Set to true if you prefer the format [origin] message to
+		 * the default format message › origin
+		 */
+		public static function get originBeforeMessage ():Boolean {
+			return Oplist.originBeforeMessage;
+		}
+
+		/**
+		 * Set to true if you prefer the format [origin] message to
+		 * the default format message › origin
+		 */
+		public static function set originBeforeMessage ( val:Boolean ):void {
+			Oplist.originBeforeMessage = val;
+		}
+
+		/**
+		 * Turns on/off Olog's draggable title bar
+		 */
+		public static function set draggable ( val:Boolean ):void {
+			Owindow.draggable = val;
+		}
+
+		/**
+		 * Turns on/off Olog's draggable title bar
+		 */
+		public static function get draggable ():Boolean {
+			return Owindow.draggable;
+		}
+
+		/**
+		 * Turns on/off Olog's resize handle
+		 */
+		public static function set resizable ( val:Boolean ):void {
+			Owindow.resizable = val;
+		}
+
+		/**
+		 * Turns on/off Olog's resize handle
+		 */
+		public static function get resizable ():Boolean {
+			return Owindow.resizable;
+		}
+
+		/**
+		 * Use this method to set a filter of which origins may pass through to log output.
+		 * @param ...origins List of origin objects or strings allowed to pass through.
+		 */
+		public static function solo ( ...origins ):void {
+			Ocore.solo.apply( null, origins );
+		}
+
+		/**
 		 * Toggles whether to parse the type of each item in an array/vector
 		 * separately or use the toString value. Default: false.
 		 * CAUTION: Setting this value to true will reduce performance
@@ -528,6 +579,34 @@ package no.olog {
 		 */
 		public static function activateTargets ( targets:Array ):void {
 			Ocore.activateLogTargets( targets );
+		}
+		
+		/*
+		 * Docks the log window to the top half of the stage
+		 */
+		public static function dockTop ():void {
+			Owindow.dockTop();
+		}
+
+		/*
+		 * Docks the log window to the bottom half of the stage
+		 */
+		public static function dockBottom ():void {
+			Owindow.dockBottom();
+		}
+
+		/*
+		 * Docks the log window to the left half of the stage
+		 */
+		public static function dockLeft ():void {
+			Owindow.dockLeft();
+		}
+
+		/*
+		 * Docks the log window to the right half of the stage
+		 */
+		public static function dockRight ():void {
+			Owindow.dockRight();
 		}
 	}
 }
